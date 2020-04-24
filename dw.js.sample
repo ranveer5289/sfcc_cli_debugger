@@ -1,0 +1,10 @@
+function sandbox() {
+    return {
+        hostname: 'abc.demandware.net',
+        username : 'my_username',
+        password: 'my_password'
+    }
+}
+
+module.exports = sandbox();
+module.exports.workspacePath = 'path_till_cartridges';
