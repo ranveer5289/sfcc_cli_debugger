@@ -7,9 +7,8 @@ const util = require('./util');
 
 async function evalOnSFCCServer(cmd, context, filename, callback) {
     const expressionValue = await debuggerClient.getValueByEval(cmd);
-    if (expressionValue) {
-        const value =  chalk.greenBright(expressionValue.result);
-        callback(null, console.log(value));
+    if (expressionValue && expressionValue.result) {
+        callback(null, expressionValue.result);
     } else {
         callback('Unable to evaluate expression', null);
     }
@@ -17,7 +16,8 @@ async function evalOnSFCCServer(cmd, context, filename, callback) {
 
 var replServer = repl.start({
   prompt: "sfcc-cli-debug > ",
-  eval: evalOnSFCCServer
+  eval: evalOnSFCCServer,
+  useColors: true
 });
 
 replServer.defineCommand('start', {
@@ -58,7 +58,7 @@ replServer.defineCommand('sb', {
 });
 
 replServer.defineCommand('sbr', {
-    help: 'Add a breakpoint and resume',
+    help: 'Add a breakpoint and resume/continue',
     async action(lineNumber) {
         this.clearBufferedCommand();
         await util.setBreakPoint(lineNumber);
@@ -116,7 +116,7 @@ replServer.defineCommand('m', {
 });
 
 replServer.defineCommand('p', {
-    help: 'Evaluate',
+    help: 'Evaluate On Server and print expression value',
     async action(expression) {
         this.clearBufferedCommand();
         const expressionValue = await debuggerClient.getValueByEval(expression);
