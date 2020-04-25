@@ -5,8 +5,19 @@ const util = require('./util');
 // todo
 // var directory = '/Users/raghuwanshi/Documents/personal/projects/storefront-reference-architecture-master/cartridges';
 
+async function evalOnSFCCServer(cmd, context, filename, callback) {
+    const expressionValue = await debuggerClient.getValueByEval(cmd);
+    if (expressionValue) {
+        const value =  chalk.greenBright(expressionValue.result);
+        callback(null, console.log(value));
+    } else {
+        callback('Unable to evaluate expression', null);
+    }
+}
+
 var replServer = repl.start({
-  prompt: "sfcc-debug > ",
+  prompt: "sfcc-cli-debug > ",
+  eval: evalOnSFCCServer
 });
 
 replServer.defineCommand('start', {
@@ -15,7 +26,7 @@ replServer.defineCommand('start', {
         this.clearBufferedCommand();
         const response = await debuggerClient.createDebuggerClient();
         if (response) {
-            console.log(chalk.green('Debugger attached to server'));
+            console.log(chalk.green('Debugger listening on server'));
         } else {
             console.log('Unable to attach debugger to server');
         }
