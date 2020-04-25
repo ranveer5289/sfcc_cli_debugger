@@ -21,9 +21,9 @@ async function printLines(offset) {
             if (i < start || i > end) {
                 continue;
             } else if (i === (currentScriptThread.lineNumber - 1)) {
-                console.log(chalk.yellowBright(`${i+1} ->> ${lines[i]}`));
+                console.log(chalk.yellowBright(`${i+1} --> ${lines[i]}`));
             } else {
-                console.log(`${i+1} ${lines[i]}`);
+                console.log(`${i+1}     ${lines[i]}`);
             }
         }
     } else {
