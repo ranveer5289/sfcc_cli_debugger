@@ -3,3 +3,6 @@ dw.js
 breakpoints.txt
 .history
 package-lock.json
+.vscode
+filepath.json
+linenumber.json

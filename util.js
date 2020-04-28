@@ -1,6 +1,7 @@
 const debuggerClient = require('./debugger');
 const chalk = require('chalk');
 const fs = require('fs');
+const childprocess = require('child_process');
 const sfccOptions = require('./dw.js');
 
 async function printLines(offset) {
@@ -50,5 +51,49 @@ async function setBreakPoint(data) {
     }
 }
 
+async function setBreakPointInteractive() {
+    childprocess.execSync('/usr/local/bin/node ./prompts/findfile.js', {stdio: 'inherit', shell: true});
+    childprocess.execSync('/usr/local/bin/node ./prompts/linenumber.js', {stdio: 'inherit', shell: true});
+
+    const pathofFilePathJSON = process.cwd() + '/filepath.json';
+    const pathofLineNumberJSON = process.cwd() + '/linenumber.json';
+
+    const fullFilePathData = getJSONFile(pathofFilePathJSON); 
+    const lineNumberData = getJSONFile(pathofLineNumberJSON);
+
+    if (fullFilePathData && lineNumberData) {
+        const fullFilePath = fullFilePathData.path; 
+        const lineNumber = lineNumberData.linenumber
+
+        const filePath = fullFilePath.replace(sfccOptions.workspacePath, '');
+        const brkPtData = [lineNumber,filePath].join(',');
+        await setBreakPoint(brkPtData);
+    } else {
+        console.log(chalk.red(`Unable to read linenumber & filepath from ${pathofLineNumberJSON} and ${pathofFilePathJSON}`));
+    }
+}
+
+async function evalOnSFCCServer(cmd, context, filename, callback) {
+    const commandWithoutLineBreaks = cmd.replace(/(\r\n|\n|\r)/gm, "");
+    if (commandWithoutLineBreaks) {
+        const expressionValue = await debuggerClient.getValueByEval(cmd);
+        if (expressionValue && expressionValue.result) {
+            callback(null, expressionValue.result);
+        } else {
+            callback('Unable to evaluate expression', null);
+        }
+    }
+}
+
+function getJSONFile(filePath) {
+    const data = fs.readFileSync(filePath);
+    if (data) {
+        return JSON.parse(data.toString());
+    }
+    return null;
+}
+
 module.exports.printLines = printLines;
 module.exports.setBreakPoint = setBreakPoint;
+module.exports.setBreakPointInteractive = setBreakPointInteractive;
+module.exports.evalOnSFCCServer = evalOnSFCCServer;

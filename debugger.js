@@ -58,7 +58,6 @@ async function setBreakpoint(lineNumber, scriptPath) {
                 }
             ]
         }
-
         const response = await instance.post(url, data);
         breakPointIsSet = (response !== null && response.status === 200);
     } catch (error) {
@@ -74,7 +73,6 @@ async function getCurrentThreadObject() {
         const url = BASE_DEBUGGER_URL + '/threads';
 
         const response = await instance.get(url);
-        // console.log(response);
         if (response && response.status === 200 && response.data.script_threads) {
             const scriptThreads = response.data.script_threads.filter(function(thread) {
                 return thread.status === 'halted';
@@ -102,7 +100,6 @@ async function getVariables() {
         const url = BASE_DEBUGGER_URL + '/threads/' + currentThreadObj.id + '/frames/0/variables';
 
         const response = await instance.get(url);
-        // console.log(response);
         if (response && response.status === 200 && response.data.object_members) {
             variables = response.data.object_members.filter(function(member){
                 return member.type !== 'Function';
@@ -110,7 +107,7 @@ async function getVariables() {
                 return {
                     name: member.name,
                     type: member.type,
-                    value: member.value
+                    value: member.value.length > 50 ? member.value.substr(0,50) + '....' : member.value
                 };
             });
         }
@@ -127,7 +124,6 @@ async function getMembersOfVariable(variableName, maxCount) {
         const url = BASE_DEBUGGER_URL + '/threads/' + currentThreadObj.id + '/frames/0/members?object_path=' + variableName;
 
         const response = await instance.get(url);
-        // console.log(response);
         if (response && response.status === 200 && response.data.object_members) {
             variables = response.data.object_members.filter(function(member) {
                 return member.type !== 'Function';
@@ -135,7 +131,7 @@ async function getMembersOfVariable(variableName, maxCount) {
                 return {
                     name: member.name,
                     type: member.type,
-                    value: member.value
+                    value: member.value.length > 50 ? member.value.substr(0,50) + '....' : member.value
                 };
             });
 
@@ -154,7 +150,6 @@ async function getValueByEval(expression) {
         const url = BASE_DEBUGGER_URL + '/threads/' + currentThreadObj.id + '/frames/0/eval?expr=' + encodeURIComponent(expression);
 
         const response = await instance.get(url);
-        // console.log(response);
         if (response && response.status === 200 && response.data) {
            value = response.data;
         }

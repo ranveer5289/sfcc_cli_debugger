@@ -1,22 +1,13 @@
 const repl = require("repl");
 const chalk = require('chalk');
+
+
 const debuggerClient = require("./debugger");
 const util = require('./util');
-// todo
-// var directory = '/Users/raghuwanshi/Documents/personal/projects/storefront-reference-architecture-master/cartridges';
-
-async function evalOnSFCCServer(cmd, context, filename, callback) {
-    const expressionValue = await debuggerClient.getValueByEval(cmd);
-    if (expressionValue && expressionValue.result) {
-        callback(null, expressionValue.result);
-    } else {
-        callback('Unable to evaluate expression', null);
-    }
-}
 
 var replServer = repl.start({
   prompt: "sfcc-cli-debug > ",
-  eval: evalOnSFCCServer,
+  eval: util.evalOnSFCCServer,
   useColors: true
 });
 
@@ -48,11 +39,21 @@ replServer.defineCommand('stop', {
     }
 });
 
+
 replServer.defineCommand('sb', {
     help: 'Add a breakpoint',
     async action(data) {
         this.clearBufferedCommand();
         await util.setBreakPoint(data);
+        this.displayPrompt();
+    }
+});
+
+replServer.defineCommand('sbi', {
+    help: 'Add a breakpoint',
+    async action(data) {
+        this.clearBufferedCommand();
+        await util.setBreakPointInteractive();
         this.displayPrompt();
     }
 });
