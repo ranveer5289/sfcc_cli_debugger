@@ -16,12 +16,12 @@ class Debugger {
      */
     constructor (debug, config) {
         const base64String = Buffer.from(config.username + ':' + config.password).toString('base64');
-        this.AUTH_HEADER = `Basic ${base64String}`;
+        const AUTH_HEADER = `Basic ${base64String}`;
         this.version = '2_0';
         this.BASE_DEBUGGER_URL = `https://${config.hostname}/s/-/dw/debugger/v${this.version}`;
         this.instance = axios.create({
             headers : {
-                authorization: this.AUTH_HEADER,
+                authorization: AUTH_HEADER,
                 'x-dw-client-id': SFCC_DEBUGGER_CLIENT_ID,
                 'content-type': 'application/json'
             },
