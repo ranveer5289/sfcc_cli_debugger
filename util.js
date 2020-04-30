@@ -62,13 +62,17 @@ async function setBreakPoint(data, client) {
  * @param {Object} client Debugger Client
  */
 async function setBreakPointInteractive(client) {
+    if (!client.connected) {
+        console.log(chalk.red('Debugger not connected'));
+        return;
+    }
     /**
      * This is a hack/workaround for issue - https://github.com/SBoudrias/Inquirer.js/issues/646
      * Inquirer is used for an interactive experience. Inquirer internally also initiates a repl server.
      * If an an Inquirer prompt finishes, it closes the current REPL debugger instance as well.
      */
-    childprocess.execSync('/usr/local/bin/node ./prompts/findfile.js', {stdio: 'inherit', shell: true});
-    childprocess.execSync('/usr/local/bin/node ./prompts/linenumber.js', {stdio: 'inherit', shell: true});
+    childprocess.execSync('node ./prompts/findfile.js', {stdio: 'inherit', shell: true});
+    childprocess.execSync('node ./prompts/linenumber.js', {stdio: 'inherit', shell: true});
 
     /** 
      * childprocess cannot return data for interactive scripts. So, we save the data temporarily in a file.
