@@ -1,10 +1,37 @@
 function sandbox() {
     return {
         hostname: 'abc.demandware.net',
-        username : 'my_username',
-        password: 'my_password'
+        username : 'username',
+        password: 'password'
     }
 }
 
+function generalConfig() {
+    return {
+        debug: false,
+        workspacePath: '/path/to/cartridges',
+        // based on sfra & sitegenesis default folder structure
+        foldersToExcludeFromSearch: [
+            'config',
+            'client',
+            'static',
+            'templates',
+            'forms',
+            'webreferences',
+            'webreferences2',
+            'pipelines',
+            '.vscode',
+            '.history',
+            'node_modules',
+            'doc',
+            'bin',
+            'src',
+            'test',
+            'storefront_refapp',
+            '.settings'
+        ]
+    };
+}
+
 module.exports = sandbox();
-module.exports.workspacePath = 'path_till_cartridges';
+module.exports.generalConfig = generalConfig();

@@ -2,7 +2,7 @@
   "name": "sfcc-cli-debugger",
   "version": "0.0.1",
   "description": "SFCC Command line debugger",
-  "main": "index.js",
+  "main": "debug.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

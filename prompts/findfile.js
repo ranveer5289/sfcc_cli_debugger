@@ -13,6 +13,9 @@ if (fs.existsSync(pathofFilePathJSON)) {
     defaultPath = require(pathofFilePathJSON).path;
 }
 
+/** 
+ * Initiate an inquirer prompt to fuzzy search for the file
+*/
 inquirer.prompt([
     {
         type: 'fuzzypath',
@@ -30,7 +33,7 @@ inquirer.prompt([
         excludeFilter: nodePath => nodePath == '.',
         itemType: 'file',
         rootPath: config.generalConfig.workspacePath,
-        message: 'Select a target directory for your file:',
+        message: 'Select your file:',
         default: defaultPath,
         suggestOnly: false,
         depthLimit: 10,
@@ -39,10 +42,10 @@ inquirer.prompt([
         fs.writeFileSync(pathofFilePathJSON, JSON.stringify(answers));
         console.log(chalk.greenBright('You selected file: ' + answers.path));
     })
-    .catch(error => {
+    .catch(function(error) {
         if(error.isTtyError) {
-          // Prompt couldn't be rendered in the current environment
+          console.log('Prompt could not be rendered in the current environment');
         } else {
-          // Something else when wrong
+          console.log('Something went wrong ' + error);
         }
       });
