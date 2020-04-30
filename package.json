@@ -2,7 +2,7 @@
   "name": "sfcc-cli-debugger",
   "version": "0.0.1",
   "description": "SFCC Command line debugger",
-  "main": "index.js",
+  "main": "debug.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.19.2",
-    "chalk": "^4.0.0"
+    "chalk": "^4.0.0",
+    "inquirer": "^7.1.0",
+    "inquirer-fuzzy-path": "^2.2.0"
   }
 }
