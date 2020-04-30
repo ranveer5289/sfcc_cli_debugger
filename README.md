@@ -3,7 +3,7 @@ An experimental command line debugger for Salesforce Commerce Cloud. This provid
 
 # Configuration
 
-Before starting to debug it is important to configure the debugger. The debugger configuration is part of `dw.j` file.
+Before starting to debug it is important to configure the debugger. The debugger configuration is part of `dw.js` file.
 Rename the `dw.js.sample` file to `dw.js` and configure it.
 
 Add your instance hostname & credentials.
@@ -53,7 +53,7 @@ sfcc-cli-debug > .help
 
 
 ## .start
-Use this command to connect/attach the debugger to your sandbox. This should be first command you should run before starting the debugging session
+Use this command to connect/attach the debugger to your sandbox. This should be first command you run before starting the debugging session
 
 ```js
 sfcc-cli-debug > .start
@@ -69,6 +69,11 @@ sfcc-cli-debug > .stop
 Debugger disconnected from server
 sfcc-cli-debug >
 ```
+
+## Check debugger halted
+
+`.ct` command can be used to see at which location debugger is currently halted. This command can also be used to check if debugger is hit or not.
+
 
 ## Add breakpoint
 
@@ -97,11 +102,11 @@ After the file is selected you will be asked for lineNumber where breakpoint sho
 
 ### Additional breakpoint commands
 
-It is not always an easy experience in cli when while debugging you have to set breakpoint at multiple locations in the same file.
+It is not always an easy experience in cli, when while debugging you have to set breakpoints at multiple locations in the same file.
 In order to make this a bit easy you can use the `.sbr lineNumber` command.
 
 `.sbr` command takes only one argument the `lineNumber`. `Script Path` is assumed to be the current script where debugger is halted.
-In this command debugger is also automatically resumed(`r`) to the new breakpoint location.
+In this command debugger is also automatically resumed(`.r`) to the new breakpoint location.
 
 
 `.gb` command can be used to list down all the breakpoints added on server
@@ -160,7 +165,8 @@ Command | Purpose
 .stop | Stops the debugger session and release/delete all breakpoints
 .b .break | Add a breakpoint at the specified lineNumber & scriptPath
 .bi | Add a breakpoint interactively
-.sbr | Add a breakpoint at specified lineNumber & resume the debugger to newly added breakpointt
+.ct | Check at which location debugger is currently halted
+.sbr | Add a breakpoint at specified lineNumber & resume the debugger to newly added breakpoint
 .gb | Get all breakpoints
 .rb | Remove all breakpoints or a specific breakpoint
 .v | Get all variables in scope of the current script
