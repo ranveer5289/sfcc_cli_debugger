@@ -28,6 +28,7 @@ async function printLines(offset, client, allFilesOfWorkspaces) {
         const start = currentLineNumber - lineOffSet;
         const end = currentLineNumber + lineOffSet;
 
+        console.log(chalk.green(fullPath));
         for (var i = 0; i < lines.length; i++) {
             if (i < start || i > end) {
                 continue;

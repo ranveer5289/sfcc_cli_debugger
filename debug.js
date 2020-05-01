@@ -5,13 +5,12 @@ const path = require('path');
 const cwd = process.cwd();
 
 const sfccOptions = require(path.join(__dirname, 'dw.js'));
+const util = require(path.join(__dirname, 'util'));
 
 const debugMode= sfccOptions.generalConfig.debug || false;
 
 const debuggerApi = require(path.join(__dirname, 'sfcc', 'debugger'));
-
 const debuggerClient = new debuggerApi(debugMode, sfccOptions);
-const util = require(path.join(__dirname, 'util'));
 
 const allFilesOfWorkspaces = util.getAllFilesFromWorkspaces();
 if (allFilesOfWorkspaces && allFilesOfWorkspaces.length > 0) {
