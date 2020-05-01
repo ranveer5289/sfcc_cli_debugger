@@ -74,7 +74,7 @@ sfcc-cli-debug >
 
 `.ct` command can be used to see at which location debugger is currently halted. This command can also be used to check if debugger is hit or not.
 
-<img src="./images/current-thread.png" width="40%"><br>
+<img src="./images/current-thread.png" width="60%"><br>
 
 ## Add breakpoint
 
@@ -100,11 +100,11 @@ sfcc-cli-debug >
 Use command `.bi` and it will open an interactive prompt. In this prompt you can search(fuzzy) & select the file of your choice. 
 After the file is selected you will be asked for lineNumber where breakpoint should be added.
 
-<img src="./images/interactive-breakpoint.png" width="40%"><br>
+<img src="./images/interactive-breakpoint.png" width="60%"><br>
 
 
 
-<img src="./images/interactive-breakpoint-1.png" width="40%">
+<img src="./images/interactive-breakpoint-1.png" width="60%">
 
 ### Additional breakpoint commands
 
@@ -114,7 +114,7 @@ In order to make this a bit easy you can use the `.sbr lineNumber` command.
 `.sbr` command takes only one argument the `lineNumber`. `Script Path` is assumed to be the current script where debugger is halted.
 In this command debugger is also automatically resumed(`.r`) to the new breakpoint location.
 
-<img src="./images/break-and-resume.png" width="40%"><br>
+<img src="./images/break-and-resume.png" width="60%"><br>
 
 
 `.gb` command can be used to list down all the breakpoints added on server
@@ -122,19 +122,19 @@ In this command debugger is also automatically resumed(`.r`) to the new breakpoi
 `.rb` command can be used to remove the breakpoints on the server. It takes an additional argument `breakpoint id` if a specific breakpoint has to be removed. If not specified all breakpoints are removed.
 `breakpoint id` is returned as the response of `.gb` command
 
-<img src="./images/get-and-delete-breakpoint.png" width="40%"><br>
+<img src="./images/get-and-delete-breakpoint.png" width="60%"><br>
 
 ## Get Variables
 
 Debugging experience without inspecting the variables & their current values in scope is no fun. So, `.v` command can be used to get all the variables currently in scope.
 
-<img src="./images/variables-and-members.png" width="40%"><br>
+<img src="./images/variables-and-members.png" width="60%"><br>
 
 ## Get member of variables
 
 `.v` commands return the variables but if you want to drill down further into a variable and it's properties use `.m variable_name` command. This command can be used recursively i.e. `.m variable_name.property_1`
 
-<img src="./images/variables-and-members.png" width="40%"><br>
+<img src="./images/variables-and-members.png" width="60%"><br>
 
 ## Step Over(Next)/Into/Out/Resume
 
@@ -148,9 +148,9 @@ These are standard debugger command to step next, over & into.
 
 `.r` - Resume to the next breakpoint location. If no next breakpoint location is found release the debugger.
 
-<img src="./images/step-into.png" width="40%"><br>
+<img src="./images/step-into.png" width="60%"><br>
 
-<img src="./images/step-out.png" width="40%">
+<img src="./images/step-out.png" width="60%">
 
 ## Print source code
 
@@ -160,7 +160,7 @@ Helper function to print the lines of code.
 
 Current location where debugger is halted is highligted with `-->` and a yellow color.
 
-<img src="./images/print-source-code.png" width="40%"><br>
+<img src="./images/print-source-code.png" width="60%"><br>
 
 
 ## Eval
@@ -169,7 +169,7 @@ Current location where debugger is halted is highligted with `-->` and a yellow 
 
 Debugger also supports evaluating command by directly entering it on the terminal.
 
-<img src="./images/eval.png" width="40%"><br>
+<img src="./images/eval.png" width="60%"><br>
 
 
 ## Exit
