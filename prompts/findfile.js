@@ -1,10 +1,11 @@
 const inquirer = require('inquirer');
 const fs = require('fs');
 const chalk = require('chalk');
-const config = require('../dw');
+const path = require('path');
+const config = require(path.join(__dirname, '..', 'dw.js'));
 
 const foldersToExclude = config.generalConfig.foldersToExcludeFromSearch;
-const pathofFilePathJSON = process.cwd() + '/filepath.json';
+const pathofFilePathJSON = path.join(process.cwd(), 'filepath.json');
 
 inquirer.registerPrompt('fuzzypath', require('inquirer-fuzzy-path'));
 
@@ -32,7 +33,7 @@ inquirer.prompt([
         },
         excludeFilter: nodePath => nodePath == '.',
         itemType: 'file',
-        rootPath: config.generalConfig.workspacePath,
+        rootPath: config.generalConfig.rootWorkSpacePath,
         message: 'Select your file:',
         default: defaultPath,
         suggestOnly: false,

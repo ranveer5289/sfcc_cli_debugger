@@ -8,7 +8,7 @@ Rename the `dw.js.sample` file to `dw.js` and configure it.
 
 Add your instance hostname & credentials.
 
-`workspacePath` - This should be path to the folder where your cartridges resides. For an SFRA project this path will be  `/my_user/home/path/till/cartridges/`
+`rootWorkSpacePath` - This should be path to the folder where your cartridges resides. For an SFRA project this path will be  `/my_user/home/path/till/cartridges/`
 
 # Installation
 

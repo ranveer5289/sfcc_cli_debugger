@@ -9,7 +9,7 @@ function sandbox() {
 function generalConfig() {
     return {
         debug: false,
-        workspacePath: '/path/to/cartridges',
+        rootWorkSpacePath: '/path/to/cartridges',
         // based on sfra & sitegenesis default folder structure
         foldersToExcludeFromSearch: [
             'config',
