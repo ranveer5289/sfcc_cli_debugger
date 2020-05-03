@@ -1,15 +1,23 @@
 const repl = require("repl");
 const chalk = require('chalk');
+const glob = require('glob');
+const path = require('path');
+const cwd = process.cwd();
 
-const sfccOptions = require('./dw.js');
+const sfccOptions = require(path.join(__dirname, 'dw.js'));
+const util = require(path.join(__dirname, 'util'));
 
 const debugMode= sfccOptions.generalConfig.debug || false;
 
-const debuggerApi = require('./sfcc/debugger');
+const debuggerApi = require(path.join(__dirname, 'sfcc', 'debugger'));
 const debuggerClient = new debuggerApi(debugMode, sfccOptions);
-const util = require('./util');
 
-var replServer = repl.start({
+const allFilesOfWorkspaces = util.getAllFilesFromWorkspaces();
+if (allFilesOfWorkspaces && allFilesOfWorkspaces.length > 0) {
+    console.log(`Total files indexed ${allFilesOfWorkspaces.length}`);
+}
+
+const replServer = repl.start({
   prompt: "sfcc-cli-debug > ",
   eval: evalOnSFCCServer,
   useColors: true
@@ -83,7 +91,7 @@ replServer.defineCommand('sbr', {
         // debugger will automatically be moved to new breakpoint location
         const success = await debuggerClient.resume();
         if(success) {
-            await util.printLines(null, debuggerClient);
+            await util.printLines(null, debuggerClient, allFilesOfWorkspaces);
         }
         this.displayPrompt();
     }
@@ -164,7 +172,7 @@ replServer.defineCommand('sn', {
         this.clearBufferedCommand();
         const success = await debuggerClient.stepOver();
         if (success) {
-            await util.printLines(null, debuggerClient);
+            await util.printLines(null, debuggerClient, allFilesOfWorkspaces);
         }
         this.displayPrompt();
     }
@@ -176,7 +184,7 @@ replServer.defineCommand('si', {
         this.clearBufferedCommand();
         const success = await debuggerClient.stepInto();
         if (success) {
-            await util.printLines(null, debuggerClient);
+            await util.printLines(null, debuggerClient, allFilesOfWorkspaces);
         }
         this.displayPrompt();
     }
@@ -188,7 +196,7 @@ replServer.defineCommand('so', {
         this.clearBufferedCommand();
         const success = await debuggerClient.stepOut();
         if (success) {
-            await util.printLines(null, debuggerClient);
+            await util.printLines(null, debuggerClient, allFilesOfWorkspaces);
         }
         this.displayPrompt();
     }
@@ -200,7 +208,7 @@ replServer.defineCommand('r', {
         this.clearBufferedCommand();
         const success = await debuggerClient.resume();
         if (success) {
-            await util.printLines(null, debuggerClient);
+            await util.printLines(null, debuggerClient, allFilesOfWorkspaces);
         } 
         this.displayPrompt();
     }
@@ -210,7 +218,7 @@ replServer.defineCommand('l', {
     help: 'print source code',
     async action(offset) {
         this.clearBufferedCommand();
-        await util.printLines(offset, debuggerClient);
+        await util.printLines(offset, debuggerClient, allFilesOfWorkspaces);
         this.displayPrompt();
     }
 });

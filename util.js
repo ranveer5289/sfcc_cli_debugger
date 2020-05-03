@@ -1,9 +1,13 @@
 const chalk = require('chalk');
 const fs = require('fs');
 const childprocess = require('child_process');
-const sfccOptions = require('./dw.js');
-const pathofFilePathJSON = process.cwd() + '/filepath.json';
-const pathofLineNumberJSON = process.cwd() + '/linenumber.json';
+const glob = require('glob');
+const path = require('path');
+var os = require('os')
+
+const sfccOptions = require(path.join(__dirname, 'dw.js'));
+const pathofFilePathJSON = path.join(process.cwd() , 'filepath.json');
+const pathofLineNumberJSON = path.join(process.cwd() , 'linenumber.json');
 
 /**
  * List source code for the current file.
@@ -11,24 +15,24 @@ const pathofLineNumberJSON = process.cwd() + '/linenumber.json';
  * @param {string} offset list lines around offset. If not specified 5 lines above/below current are printed
  * @param {Object} client Debugger Client
  */
-async function printLines(offset, client) {
-    const directory = sfccOptions.generalConfig.workspacePath;
+async function printLines(offset, client, allFilesOfWorkspaces) {
     const currentScriptThread = await client.getCurrentThreadObject();
     if(currentScriptThread && typeof currentScriptThread === 'object' && Object.keys(currentScriptThread).length > 0) {
         const scriptPath = currentScriptThread.scriptPath;
         const currentLineNumber = currentScriptThread.lineNumber;
-        // todo: handle start,end
-        const fullPath = directory + scriptPath;
-        const lines = fs.readFileSync(fullPath).toString().split('\n');
+
+        const fullPath = getCompleteFilePath(scriptPath, allFilesOfWorkspaces);
+        const lines = fs.readFileSync(fullPath).toString().split(os.EOL);
 
         const lineOffSet = offset ? Number(offset) : 5;
         const start = currentLineNumber - lineOffSet;
         const end = currentLineNumber + lineOffSet;
 
+        console.log(chalk.green(fullPath));
         for (var i = 0; i < lines.length; i++) {
             if (i < start || i > end) {
                 continue;
-            } else if (i === (currentScriptThread.lineNumber - 1)) {
+            } else if (i === (currentLineNumber - 1)) {
                 console.log(chalk.yellowBright(`${i+1} --> ${lines[i]}`));
             } else {
                 console.log(`${i+1}     ${lines[i]}`);
@@ -71,8 +75,12 @@ async function setBreakPointInteractive(client) {
      * Inquirer is used for an interactive experience. Inquirer internally also initiates a repl server.
      * If an an Inquirer prompt finishes, it closes the current REPL debugger instance as well.
      */
-    childprocess.execSync('node ./prompts/findfile.js', {stdio: 'inherit', shell: true});
-    childprocess.execSync('node ./prompts/linenumber.js', {stdio: 'inherit', shell: true});
+
+    const findFilePath = path.join(__dirname, 'prompts', 'findfile.js');
+    const lineNumberPath = path.join(__dirname, 'prompts', 'linenumber.js');
+
+    childprocess.execSync(`node ${findFilePath}`, {stdio: 'inherit', shell: true});
+    childprocess.execSync(`node ${lineNumberPath}`, {stdio: 'inherit', shell: true});
 
     /** 
      * childprocess cannot return data for interactive scripts. So, we save the data temporarily in a file.
@@ -86,8 +94,19 @@ async function setBreakPointInteractive(client) {
         const fullFilePath = fullFilePathData.path; 
         const lineNumber = lineNumberData.linenumber;
 
-        // SFCC needs absolute path
-        const filePath = fullFilePath.replace(sfccOptions.generalConfig.workspacePath, '');
+        let filePath;
+        const sep = path.sep;
+        if (fullFilePath.indexOf(`${sep}cartridges${sep}`) !== -1) {
+            // SFCC needs absolute path
+            // plugin_wishlists/(cartridges)/plugin_wishlists/cartridge/controllers/Wishlist.js
+            // /plugin_wishlists/cartridge/controllers/Wishlist.js
+            filePath = sep + fullFilePath.split(`${sep}cartridges${sep}`)[1];
+        } else {
+            filePath = fullFilePath.replace(sfccOptions.generalConfig.rootWorkSpacePath, '');
+            if (filePath.substr(0, 1) !== sep) {
+                filePath = sep + filePath;
+            }
+        }
         const brkPtData = [lineNumber,filePath].join(',');
         await setBreakPoint(brkPtData, client);
     } else {
@@ -122,7 +141,46 @@ function cleanup() {
     }
 }
 
+function getAllFilesFromWorkspaces() {
+    const foldersToExclude = sfccOptions.generalConfig.foldersToExcludeFromSearch;
+    const childWorkSpaces = sfccOptions.generalConfig.childWorkSpaces;
+
+    let allFiles = [];
+    for (let i = 0; i < childWorkSpaces.length; i++) {
+        const workspace = childWorkSpaces[i];
+        // todo make is async
+        const filesOfWorkspace = glob.sync(`**${path.sep}*.{js,ds}`, {
+            cwd: workspace,
+            nosort: true,
+            nodir: true
+        }).filter(function(f){
+            for (let i = 0; i < foldersToExclude.length; i++) {
+                if (f.includes(foldersToExclude[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }).map(function(f) {
+            return path.join(workspace, f);
+        });
+
+        allFiles = allFiles.concat(filesOfWorkspace);
+    }
+    return allFiles;
+}
+
+function getCompleteFilePath(partialPath, allFilesOfWorkspaces) {
+    for (let i = 0; i < allFilesOfWorkspaces.length; i++) {
+        const f = allFilesOfWorkspaces[i];
+        if (f.includes(partialPath)) {
+            return f;
+        }
+    }
+    return partialPath;
+}
+
 module.exports.printLines = printLines;
 module.exports.setBreakPoint = setBreakPoint;
 module.exports.setBreakPointInteractive = setBreakPointInteractive;
 module.exports.cleanup = cleanup;
+module.exports.getAllFilesFromWorkspaces = getAllFilesFromWorkspaces;

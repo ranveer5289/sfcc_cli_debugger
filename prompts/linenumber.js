@@ -1,8 +1,10 @@
 const inquirer = require('inquirer');
 const fs = require('fs');
 const chalk = require('chalk');
+const path = require('path');
 
-const pathofLineNumberJSON = process.cwd() + '/linenumber.json';
+
+const pathofLineNumberJSON = path.join(process.cwd(), 'linenumber.json');
 return inquirer
   .prompt([
     {

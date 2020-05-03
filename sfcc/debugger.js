@@ -84,7 +84,6 @@ class Debugger {
      * @memberof Debugger
      */
     async setBreakpoint(lineNumber, scriptPath) {
-        console.log(this.connected);
         if (!this.connected) {
             console.log(chalk.red('Debugger not connected'));
             return;
@@ -380,7 +379,7 @@ class Debugger {
             if (this.debug & response.data) {
                 console.log(response.data)
             }
-           if (response !== null && response.status === 200) {
+           if (response !== null && response.status === 200 && response.data) {
                // todo: handle call stack exhaustion
                const currentCallStack = response.data.call_stack[0];
                return {
@@ -416,7 +415,7 @@ class Debugger {
             if (this.debug & response.data) {
                 console.log(response.data)
             }
-           if (response !== null && response.status === 200) {
+           if (response !== null && response.status === 200 && response.data) {
                // todo: handle call stack exhaustion
                const currentCallStack = response.data.call_stack[0];
                return {
@@ -452,7 +451,7 @@ class Debugger {
             if (this.debug & response.data) {
                 console.log(response.data)
             }
-           if (response !== null && response.status === 200) {
+           if (response !== null && response.status === 200 && response.data) {
                // todo: handle call stack exhaustion
                const currentCallStack = response.data.call_stack[0];
                if (currentCallStack && currentCallStack.length > 0) {

@@ -8,7 +8,88 @@ Rename the `dw.js.sample` file to `dw.js` and configure it.
 
 Add your instance hostname & credentials.
 
-`workspacePath` - This should be path to the folder where your cartridges resides. For an SFRA project this path will be  `/my_user/home/path/till/cartridges/`
+Out of the box debugger supports two kinds of workspace setups.
+
+## Single Root Workspace
+
+In this setup all cartridges are under `/cartridges/` and under one parent folder as shown below.
+
+```js
+>> ~/clone/dummy_folder/storefront-reference-architecture
+├── bin
+├── cartridges
+│   ├── app_storefront_base
+│   ├── bm_app_storefront_base
+│   └── modules
+│   └── plugin_ratings
+│   └── plugin_wishlist
+│   └── int_klarna
+└── test
+    ├── acceptance
+    ├── integration
+    ├── mocks
+    └── unit
+```
+
+This setup is quite easy to configure using `rootWorkSpacePath` property. 
+
+In `dw.js` configure `rootWorkSpacePath` as `/my_user/home/path/till/cartridges/`. So, for above example this will be `/Users/username/clone/dummy_folder/storefront-reference-architecture/cartridges`
+
+## Split Workspace
+
+This setup is similar to above but supports a hierarchy. This setup is best shown via below example.
+
+```js
+>> ~/clone/dummy_folder
+.
+├── integrations
+│   └── link_klarnacheckout
+│       ├── cartridges
+│       │   ├── int_klarna_checkout
+│       │   ├── int_klarna_checkout_core
+│       │   └── int_klarna_checkout_sfra
+├── plugins
+│   ├── plugin_ratings
+│   │   └── cartridges
+│   │       └── plugin_ratings
+│   └── plugin_wishlists
+│       ├── cartridges
+│       │   └── plugin_wishlists
+└── storefront-reference-architecture
+    ├── cartridges
+    │   ├── app_storefront_base
+    │   ├── bm_app_storefront_base
+    │   └── modules
+```
+
+The above setup requires additional setup in `dw.js` file.
+
+`rootWorkSpacePath` - Configure this with the path of the parent folder which contains all your cartridges. So, in above example this would be `/Users/username/clone/dummy_folder`
+
+`childWorkSpaces` - Configure this with the path of individual folders. So, in above example this would be
+
+```js
+        childWorkSpaces: [
+            '/Users/username/clone/dummy_folder/integrations',
+            '/Users/username/clone/dummy_folder/plugins',
+            '/Users/username/clone/dummy_folder/storefront-reference-architecture'
+        ]
+        ...
+```
+
+## Any other kind of setup
+
+Any other setup like folders not sharing a common parent folder will work similar to setup #2 but `interactive breakpoint` feature which relies on single/common root path `rootWorkSpacePath` will not work as expected but you can always setup breakpoint manually by specifying the script path.
+
+```js
+        rootWorkSpacePath: '/Users/username/some/random/path/1'
+        childWorkSpaces: [
+            '/Users/username/some/random/path/1',
+            '/Users/username/some/random/path/2',
+            '/Users/username/some/random/path/3'
+        ]
+        ...
+```
 
 # Installation
 
