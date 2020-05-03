@@ -17,12 +17,11 @@ if (allFilesOfWorkspaces && allFilesOfWorkspaces.length > 0) {
     console.log(`Total files indexed ${allFilesOfWorkspaces.length}`);
 }
 
-var replServer = repl.start({
+const replServer = repl.start({
   prompt: "sfcc-cli-debug > ",
   eval: evalOnSFCCServer,
   useColors: true
 });
-
 
 async function evalOnSFCCServer(cmd, context, filename, callback) {
     const commandWithoutLineBreaks = cmd.replace(/(\r\n|\n|\r)/gm, "");
