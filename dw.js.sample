@@ -29,7 +29,8 @@ function generalConfig() {
             'src',
             'test',
             'storefront_refapp',
-            '.settings'
+            '.settings',
+            '.git'
         ]
     };
 }
