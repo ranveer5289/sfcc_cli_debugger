@@ -10,6 +10,7 @@ function generalConfig() {
     return {
         debug: false,
         rootWorkSpacePath: '/path/to/cartridges',
+        childWorkSpaces: [],
         // based on sfra & sitegenesis default folder structure
         foldersToExcludeFromSearch: [
             'config',
