@@ -84,7 +84,6 @@ class Debugger {
      * @memberof Debugger
      */
     async setBreakpoint(lineNumber, scriptPath) {
-        console.log(this.connected);
         if (!this.connected) {
             console.log(chalk.red('Debugger not connected'));
             return;
