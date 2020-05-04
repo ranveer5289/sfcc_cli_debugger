@@ -1,5 +1,28 @@
+
+
 # Salesforce Command Line Debugger
 An experimental command line debugger for Salesforce Commerce Cloud. This provides an interface similar to pdb debugger for python.
+
+- [Installation](#installation)
+- [Configuration](#configuration)
+  * [Single Root Workspace](#single-root-workspace)
+  * [Split Workspace](#split-workspace)
+  * [Any other setup](#any-other-setup)
+- [Usage](#usage)
+  * [Connect Debugger](#connect-debugger)
+  * [Disconnect Debugger](#disconnect-debugger)
+  * [Check debugger halted](#check-debugger-halted)
+  * [Add breakpoint](#add-breakpoint)
+    + [Manually](#manually)
+    + [Interactively](#interactively)
+    + [Additional breakpoint commands](#additional-breakpoint-commands)
+  * [Get Variables](#get-variables)
+  * [Get member of variables](#get-member-of-variables)
+  * [Step Over(Next)/Into/Out/Resume](#step-over-next--into-out-resume)
+  * [Print source code](#print-source-code)
+  * [Eval](#eval)
+  * [Exit](#exit)
+- [All Commands](#all-commands)
 
 # Installation
 
@@ -140,7 +163,7 @@ sfcc-cli-debug > .help
 ```
 
 
-## .start
+## Connect Debugger
 Use this command to connect/attach the debugger to your sandbox. This should be first command you run before starting the debugging session
 
 ```js
@@ -149,7 +172,7 @@ Debugger listening on server
 sfcc-cli-debug >
 ```
 
-## .stop
+## Disconnect Debugger
 Use this command to stop the debugger connected/attached to your sandbox.
 
 ```js
