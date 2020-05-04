@@ -1,6 +1,6 @@
 
 
-# Salesforce Command Line Debugger
+# Salesforce Commerce Cloud Command Line Debugger
 An experimental command line debugger for Salesforce Commerce Cloud. This provides an interface similar to pdb debugger for python.
 
 - [Installation](#installation)
