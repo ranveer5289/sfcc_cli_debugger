@@ -5,7 +5,6 @@ const glob = require('glob');
 const path = require('path');
 var os = require('os')
 
-const sfccOptions = require(path.join(__dirname, 'dw.js'));
 const pathofFilePathJSON = path.join(process.cwd() , 'filepath.json');
 const pathofLineNumberJSON = path.join(process.cwd() , 'linenumber.json');
 
@@ -22,6 +21,7 @@ async function printLines(offset, client, allFilesOfWorkspaces) {
         const currentLineNumber = currentScriptThread.lineNumber;
 
         const fullPath = getCompleteFilePath(scriptPath, allFilesOfWorkspaces);
+        //TODO : handle file not found
         const lines = fs.readFileSync(fullPath).toString().split(os.EOL);
 
         const lineOffSet = offset ? Number(offset) : 5;
@@ -64,8 +64,10 @@ async function setBreakPoint(data, client) {
 /**
  * Helper method to interactively search & select the file & add a breakpoint.
  * @param {Object} client Debugger Client
+ * @param {Object} config Configuration file
+ * @param {string} configPath Path to Configuration file
  */
-async function setBreakPointInteractive(client) {
+async function setBreakPointInteractive(client, config, configPath) {
     if (!client.connected) {
         console.log(chalk.red('Debugger not connected'));
         return;
@@ -79,7 +81,7 @@ async function setBreakPointInteractive(client) {
     const findFilePath = path.join(__dirname, 'prompts', 'findfile.js');
     const lineNumberPath = path.join(__dirname, 'prompts', 'linenumber.js');
 
-    childprocess.execSync(`node ${findFilePath}`, {stdio: 'inherit', shell: true});
+    childprocess.execSync(`node ${findFilePath} --config ${configPath}`, {stdio: 'inherit', shell: true});
     childprocess.execSync(`node ${lineNumberPath}`, {stdio: 'inherit', shell: true});
 
     /** 
@@ -102,7 +104,7 @@ async function setBreakPointInteractive(client) {
             // /plugin_wishlists/cartridge/controllers/Wishlist.js
             filePath = sep + fullFilePath.split(`${sep}cartridges${sep}`)[1];
         } else {
-            filePath = fullFilePath.replace(sfccOptions.generalConfig.rootWorkSpacePath, '');
+            filePath = fullFilePath.replace(config.rootWorkSpacePath, '');
             if (filePath.substr(0, 1) !== sep) {
                 filePath = sep + filePath;
             }
@@ -141,14 +143,14 @@ function cleanup() {
     }
 }
 
-function getAllFilesFromWorkspaces() {
-    const foldersToExclude = sfccOptions.generalConfig.foldersToExcludeFromSearch;
-    const childWorkSpaces = sfccOptions.generalConfig.childWorkSpaces;
+function getAllFilesFromWorkspaces(config) {
+    const foldersToExclude = config.foldersToExcludeFromSearch;
+    const childWorkSpaces = config.childWorkSpaces;
 
     let allFiles = [];
     for (let i = 0; i < childWorkSpaces.length; i++) {
         const workspace = childWorkSpaces[i];
-        // todo make is async
+        // todo make it async
         const filesOfWorkspace = glob.sync(`**${path.sep}*.{js,ds}`, {
             cwd: workspace,
             nosort: true,

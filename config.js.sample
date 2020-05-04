@@ -1,0 +1,30 @@
+function generalConfig() {
+    return {
+        debug: false,
+        rootWorkSpacePath: "/path/to/cartridges",
+        childWorkSpaces: [],
+        // based on sfra & sitegenesis default folder structure
+        foldersToExcludeFromSearch: [
+            "config",
+            "client",
+            "static",
+            "templates",
+            "forms",
+            "webreferences",
+            "webreferences2",
+            "pipelines",
+            "node_modules",
+            "doc",
+            "bin",
+            "src",
+            "test",
+            "storefront_refapp",
+            ".vscode",
+            ".settings",
+            ".git",
+            ".history"
+        ]
+    };
+}
+
+module.exports = generalConfig();

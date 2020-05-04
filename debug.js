@@ -2,17 +2,20 @@ const repl = require("repl");
 const chalk = require('chalk');
 const glob = require('glob');
 const path = require('path');
-const cwd = process.cwd();
-
-const sfccOptions = require(path.join(__dirname, 'dw.js'));
+const argv = require('yargs').argv
 const util = require(path.join(__dirname, 'util'));
 
-const debugMode= sfccOptions.generalConfig.debug || false;
+const dwConfigPath = argv.dwconfig || 'dw.json';
+const configPath = argv.config || 'config.js';
 
+const sfccOptions = require(path.join(__dirname, dwConfigPath));
+const config = require(path.join(__dirname, configPath));
+
+const debugMode= config.debug || false;
 const debuggerApi = require(path.join(__dirname, 'sfcc', 'debugger'));
 const debuggerClient = new debuggerApi(debugMode, sfccOptions);
 
-const allFilesOfWorkspaces = util.getAllFilesFromWorkspaces();
+const allFilesOfWorkspaces = util.getAllFilesFromWorkspaces(config);
 if (allFilesOfWorkspaces && allFilesOfWorkspaces.length > 0) {
     console.log(`Total files indexed ${allFilesOfWorkspaces.length}`);
 }
@@ -78,7 +81,7 @@ replServer.defineCommand('bi', {
     help: 'Add a breakpoint interactively',
     async action(data) {
         this.clearBufferedCommand();
-        await util.setBreakPointInteractive(debuggerClient);
+        await util.setBreakPointInteractive(debuggerClient, config, configPath);
         this.displayPrompt();
     }
 });
