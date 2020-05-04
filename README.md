@@ -113,9 +113,9 @@ Debugger also support multiple configurations i.e. you can maintain different co
 node debug.js --dwconfig ./dw.json --config ./config.js
 ```
 
-After running the above you will enter into node repl prompt `sfcc-cli-debug`. The commands recognized by the debugger are listed in the help section.
+After running the above command you will enter into a custom repl prompt `sfcc-cli-debug`. The commands recognized by the debugger are listed in the help section (.help).
 
-Commands that the debugger prompt doesn't recognize are assumed to be code statements and are executed in the context of the program being debugged against SFCC server.
+Commands that the debugger prompt doesn't recognize are assumed to be SFCC code statements and are executed in the context of the program being debugged against SFCC server.
 
 ```js
 sfcc-cli-debug > .help
