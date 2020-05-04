@@ -3,10 +3,11 @@ An experimental command line debugger for Salesforce Commerce Cloud. This provid
 
 # Configuration
 
-Before starting to debug it is important to configure the debugger. The debugger configuration is part of `dw.js` file.
-Rename the `dw.js.sample` file to `dw.js` and configure it.
+Before starting to debug it is important to configure the debugger. The debugger configuration is part of `dw.json` and `config.js` file.
 
-Add your instance hostname & credentials.
+`dw.json` is the standard file which is used by various other SFCC tools. Add your instance hostname & credentials in it.
+
+`config.js` is a custom configuration file. See `config.js.sample` for possible options.
 
 Out of the box debugger supports two kinds of workspace setups.
 
@@ -33,7 +34,7 @@ In this setup all cartridges are under `/cartridges/` and under one parent folde
 
 This setup is quite easy to configure using `rootWorkSpacePath` property. 
 
-In `dw.js` configure `rootWorkSpacePath` as `/my_user/home/path/till/cartridges/`. So, for above example this will be `/Users/username/clone/dummy_folder/storefront-reference-architecture/cartridges`
+In `config.js` configure `rootWorkSpacePath` as `/my_user/home/path/till/cartridges/`. So, for above example this will be `/Users/username/clone/dummy_folder/storefront-reference-architecture/cartridges`
 
 ## Split Workspace
 
@@ -62,7 +63,7 @@ This setup is similar to above but supports a hierarchy. This setup is best show
     │   └── modules
 ```
 
-The above setup requires additional setup in `dw.js` file.
+The above setup requires additional setup in `config.js` file.
 
 `rootWorkSpacePath` - Configure this with the path of the parent folder which contains all your cartridges. So, in above example this would be `/Users/username/clone/dummy_folder`
 
@@ -77,7 +78,7 @@ The above setup requires additional setup in `dw.js` file.
         ...
 ```
 
-## Any other kind of setup
+## Any other setup
 
 Any other setup like folders not sharing a common parent folder will work similar to setup #2 but `interactive breakpoint` feature which relies on single/common root path `rootWorkSpacePath` will not work as expected but you can always setup breakpoint manually by specifying the script path.
 
@@ -93,20 +94,26 @@ Any other setup like folders not sharing a common parent folder will work simila
 
 # Installation
 
-Download/clone the repository & run `npm install` to install the dependencies.
+Download/clone the repository & run `npm install` to install the dependencies. Node version `10.x` or greater is required.
 
 # Usage
 
 Debugger is based on the [node](https://nodejs.org/api/repl.html#repl_replserver_definecommand_keyword_cmd) repl module.
 
-Run the debugger script with below command. After running this you will enter into node repl prompt `sfcc-cli-debug`
+Run the debugger script with below command.
 
 ```js
 node debug.js
 sfcc-cli-debug >
 ```
 
-The commands recognized by the debugger are listed in the help section.
+Debugger also support multiple configurations i.e. you can maintain different configurations per project and supply it at runtime through cli parameters. If no parameters are specified debugger fallbacks to standard `dw.json` and `config.js` file names.
+
+```js
+node debug.js --dwconfig ./dw.json --config ./config.js
+```
+
+After running the above you will enter into node repl prompt `sfcc-cli-debug`. The commands recognized by the debugger are listed in the help section.
 
 Commands that the debugger prompt doesn't recognize are assumed to be code statements and are executed in the context of the program being debugged against SFCC server.
 
