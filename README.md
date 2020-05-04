@@ -1,6 +1,10 @@
 # Salesforce Command Line Debugger
 An experimental command line debugger for Salesforce Commerce Cloud. This provides an interface similar to pdb debugger for python.
 
+# Installation
+
+Download/clone the repository & run `npm install` to install the dependencies. Node version `10.x` or greater is required.
+
 # Configuration
 
 Before starting to debug it is important to configure the debugger. The debugger configuration is part of `dw.json` and `config.js` file.
@@ -91,10 +95,6 @@ Any other setup like folders not sharing a common parent folder will work simila
         ]
         ...
 ```
-
-# Installation
-
-Download/clone the repository & run `npm install` to install the dependencies. Node version `10.x` or greater is required.
 
 # Usage
 
