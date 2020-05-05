@@ -107,12 +107,14 @@ class Debugger {
             if (this.debug & response.data) {
                 console.log(chalk.green(response.data));
             }
-            if (response !== null && response.status === 200) {
+            if (response !== null && response.status === 200 && response.data) {
                 console.log(chalk.green('Breakpoint successfully set on server at line# ' + lineNumber));
+                return response.data.breakpoints;
             }
         } catch (error) {
             console.error(chalk.red('Error setting breakpoint ' + error));
         }
+        return;
     }
 
     /**
@@ -158,10 +160,11 @@ class Debugger {
      * if no brkpID all breakpoints are removed
      *
      * @param {string} brkpID optional breakpoint id
+     * @param {boolean} silent do not print success message
      * @returns
      * @memberof Debugger
      */
-    async deleteBreakpoints(brkpID) {
+    async deleteBreakpoints(brkpID, silent) {
         if (!this.connected) {
             console.log(chalk.red('Debugger not connected'));
             return;
@@ -177,7 +180,9 @@ class Debugger {
             const response = await this.instance.delete(url);
 
             if (response !== null && response.status === 204) {
-                brkpID ? console.log(chalk.green('breakpoint removed')) : console.log(chalk.green('All breakpoints removed'));
+                if (!silent) {
+                    brkpID ? console.log(chalk.green('breakpoint removed')) : console.log(chalk.green('All breakpoints removed'));
+                }
             } else {
                 console.log(chalk.green('No breakpoints currently set'));
             }

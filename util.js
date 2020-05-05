@@ -21,7 +21,11 @@ async function printLines(offset, client, allFilesOfWorkspaces) {
         const currentLineNumber = currentScriptThread.lineNumber;
 
         const fullPath = getCompleteFilePath(scriptPath, allFilesOfWorkspaces);
-        //TODO : handle file not found
+        const workspaceFileFound = fs.existsSync(fullPath);
+        if (!workspaceFileFound) {
+            console.log(chalk.red(`File not found ${fullPath}`));
+            return;
+        }
         const lines = fs.readFileSync(fullPath).toString().split(os.EOL);
 
         const lineOffSet = offset ? Number(offset) : 5;
@@ -58,7 +62,8 @@ async function setBreakPoint(data, client) {
     } else {
         scriptPath = dataParts[1];
     }
-    await client.setBreakpoint(lineNumber, scriptPath);
+    const resp = await client.setBreakpoint(lineNumber, scriptPath);
+    return resp;
 }
 
 /**
@@ -145,11 +150,15 @@ function cleanup() {
 
 function getAllFilesFromWorkspaces(config) {
     const foldersToExclude = config.foldersToExcludeFromSearch;
-    const childWorkSpaces = config.childWorkSpaces;
+    let workspaces = config.childWorkSpaces;
+    // if no childWorkSpaces defined means this is a single root workspace
+    if (workspaces.length === 0) {
+        workspaces = [config.rootWorkSpacePath];
+    }
 
     let allFiles = [];
-    for (let i = 0; i < childWorkSpaces.length; i++) {
-        const workspace = childWorkSpaces[i];
+    for (let i = 0; i < workspaces.length; i++) {
+        const workspace = workspaces[i];
         // todo make it async
         const filesOfWorkspace = glob.sync(`**${path.sep}*.{js,ds}`, {
             cwd: workspace,

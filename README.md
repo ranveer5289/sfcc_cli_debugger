@@ -148,6 +148,7 @@ sfcc-cli-debug > .help
 .break    Alias : Add a breakpoint
 .bi       Add a breakpoint interactively
 .sbr      Add a breakpoint and resume/continue
+.tbr      Add a breakpoint temporarily and resume/continue
 .ct       Get current thread
 .v        Get Variables in scope
 .m        Get members of variables
@@ -220,10 +221,12 @@ After the file is selected you will be asked for lineNumber where breakpoint sho
 ### Additional breakpoint commands
 
 It is not always an easy experience in cli, when while debugging you have to set breakpoints at multiple locations in the same file.
-In order to make this a bit easy you can use the `.sbr lineNumber` command.
+In order to make this a bit easy you can use the `.sbr lineNumber` or `.tbr lineNumber`command.
 
-`.sbr` command takes only one argument the `lineNumber`. `Script Path` is assumed to be the current script where debugger is halted.
+`.sbr` and `.tbr` command takes only one argument the `lineNumber`. `Script Path` is assumed to be the current script where debugger is halted.
 In this command debugger is also automatically resumed(`.r`) to the new breakpoint location.
+
+Difference between `.sbr` and `.tbr` is that `.tbr` sets the breakpoint temporarily(t) i.e. once debugger is resumed to that particular location it will silently remove the breakpoint.
 
 <img src="./images/break-and-resume.png" width="60%"><br>
 
@@ -298,6 +301,7 @@ Command | Purpose
 .bi | Add a breakpoint interactively
 .ct | Check at which location debugger is currently halted
 .sbr | Add a breakpoint at specified lineNumber & resume the debugger to newly added breakpoint
+.tbr | Add a breakpoint temporarily at specified lineNumber & resume the debugger to newly added breakpoint
 .gb | Get all breakpoints
 .rb | Remove all breakpoints or a specific breakpoint
 .v | Get all variables in scope of the current script

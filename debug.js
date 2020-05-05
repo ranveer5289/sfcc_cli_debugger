@@ -100,6 +100,25 @@ replServer.defineCommand('sbr', {
     }
 });
 
+replServer.defineCommand('tbr', {
+    help: 'Add a breakpoint temporarily and resume/continue',
+    async action(lineNumber) {
+        this.clearBufferedCommand();
+        const resp = await util.setBreakPoint(lineNumber, debuggerClient);
+        // debugger will automatically be moved to new breakpoint location
+        const success = await debuggerClient.resume();
+        if(success) {
+            await util.printLines(null, debuggerClient, allFilesOfWorkspaces);
+            // since this is a temporary breakpoint delete it now but in an async way
+            if (resp && resp.length > 0) {
+                const brkpID = resp[0].id;
+                debuggerClient.deleteBreakpoints(brkpID, true);
+            }
+        }
+        this.displayPrompt();
+    }
+});
+
 replServer.defineCommand('gb', {
     help: 'Display all breakpoints',
     async action() {
@@ -228,6 +247,6 @@ replServer.defineCommand('l', {
 
 replServer.on('exit', async function() {
     await debuggerClient.delete();
-    util.cleanup();
+    // util.cleanup();
     process.exit();
 });
