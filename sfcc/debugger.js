@@ -384,7 +384,7 @@ class Debugger {
             if (this.debug & response.data) {
                 console.log(response.data)
             }
-           if (response !== null && response.status === 200 && response.data) {
+           if (response !== null && response.status === 200 && response.data && response.data.call_stack) {
                // todo: handle call stack exhaustion
                const currentCallStack = response.data.call_stack[0];
                return {
@@ -420,7 +420,7 @@ class Debugger {
             if (this.debug & response.data) {
                 console.log(response.data)
             }
-           if (response !== null && response.status === 200 && response.data) {
+           if (response !== null && response.status === 200 && response.data && response.data.call_stack) {
                // todo: handle call stack exhaustion
                const currentCallStack = response.data.call_stack[0];
                return {
@@ -456,7 +456,7 @@ class Debugger {
             if (this.debug & response.data) {
                 console.log(response.data)
             }
-           if (response !== null && response.status === 200 && response.data) {
+           if (response !== null && response.status === 200 && response.data && response.data.call_stack) {
                // todo: handle call stack exhaustion
                const currentCallStack = response.data.call_stack[0];
                if (currentCallStack && currentCallStack.length > 0) {
@@ -480,7 +480,7 @@ class Debugger {
      * @returns
      * @memberof Debugger
      */
-    async  resume() {
+    async resume() {
         if (!this.connected) {
             console.log(chalk.red('Debugger not connected'));
             return;
