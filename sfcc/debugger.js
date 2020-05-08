@@ -124,6 +124,7 @@ class Debugger {
      * @memberof Debugger
      */
     async getBreakpoints() {
+        let breakpoints = [];
         if (!this.connected) {
             console.log(chalk.red('Debugger not connected'));
             return;
@@ -139,7 +140,7 @@ class Debugger {
             }
             if (response !== null && response.status === 200 && response.data.breakpoints) {
                 console.log(chalk.green('Breakpoints are set at following locations: '));
-                const breakpoints = response.data.breakpoints.map(function(bp) {
+                breakpoints = response.data.breakpoints.map(function(bp) {
                     return {
                         breakpoint_id: bp.id,
                         script: bp.script_path,
@@ -153,6 +154,7 @@ class Debugger {
         } catch (error) {
             console.error(chalk.red('Error setting breakpoint ' + error));
         }
+        return breakpoints;
     }
 
     /**

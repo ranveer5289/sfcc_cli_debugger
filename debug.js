@@ -3,6 +3,7 @@ const chalk = require('chalk');
 const glob = require('glob');
 const path = require('path');
 const argv = require('yargs').argv
+const fs = require('fs');
 const util = require(path.join(__dirname, 'util'));
 
 const dwConfigPath = argv.dwconfig || 'dw.json';
@@ -241,6 +242,37 @@ replServer.defineCommand('l', {
     async action(offset) {
         this.clearBufferedCommand();
         await util.printLines(offset, debuggerClient, allFilesOfWorkspaces);
+        this.displayPrompt();
+    }
+});
+
+replServer.defineCommand('save', {
+    help: 'Save debugger state',
+    async action(offset) {
+        this.clearBufferedCommand();
+        if (debuggerClient.connected) {
+            const breakpoints = await debuggerClient.getBreakpoints();
+            if (breakpoints && breakpoints.length > 0) {
+                const breakpointObj = breakpoints.map(function(brk) {
+                    return {
+                        script_path: brk.script,
+                        lint_number: brk.line
+                    };
+                });
+
+                const debuggerStateFile = path.join(__dirname, 'state.json');
+                if (fs.existsSync(debuggerStateFile)) {
+                    fs.unlinkSync(debuggerStateFile);
+                }
+
+                fs.writeFileSync(debuggerStateFile, JSON.stringify(breakpointObj));
+                console.log(chalk.green('Debugger current state successfully saved'));
+            } else {
+                console.log(chalk.red('No breakpoints found'));
+            }
+        } else {
+            console.log(chalk.red('Debugger not connected'));
+        }
         this.displayPrompt();
     }
 });
