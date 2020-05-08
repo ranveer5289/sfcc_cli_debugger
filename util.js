@@ -159,30 +159,23 @@ function getAllFilesFromWorkspaces(config) {
     let allFiles = [];
     for (let i = 0; i < workspaces.length; i++) {
         const workspace = workspaces[i];
-        glob(`**${path.sep}*.{js,ds}`, {
+        // todo make it async
+        const filesOfWorkspace = glob.sync(`**${path.sep}*.{js,ds}`, {
             cwd: workspace,
             nosort: true,
             nodir: true
-        }, function(error, files) {
-            if (error) {
-                console.log(chalk.red(error.toString()));
-                return allFiles;
+        }).filter(function(f){
+            for (let i = 0; i < foldersToExclude.length; i++) {
+                if (f.includes(foldersToExclude[i])) {
+                    return false;
+                }
             }
-
-            if (files && files.length > 0) {
-                const filesOfWorkspace = files.filter(function(f) {
-                    for (let i = 0; i < foldersToExclude.length; i++) {
-                        if (f.includes(foldersToExclude[i])) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }).map(function(f) {
-                    return path.join(workspace, f);
-                });
-                allFiles = allFiles.concat(filesOfWorkspace);
-            }
+            return true;
+        }).map(function(f) {
+            return path.join(workspace, f);
         });
+
+        allFiles = allFiles.concat(filesOfWorkspace);
     }
     return allFiles;
 }

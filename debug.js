@@ -15,8 +15,10 @@ const debugMode= config.debug || false;
 const debuggerApi = require(path.join(__dirname, 'sfcc', 'debugger'));
 const debuggerClient = new debuggerApi(debugMode, sfccOptions);
 
-//async
 const allFilesOfWorkspaces = util.getAllFilesFromWorkspaces(config);
+if (allFilesOfWorkspaces && allFilesOfWorkspaces.length > 0) {
+    console.log(`Total files indexed ${allFilesOfWorkspaces.length}`);
+}
 
 const replServer = repl.start({
   prompt: "sfcc-cli-debug > ",
