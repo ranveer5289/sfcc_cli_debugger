@@ -160,6 +160,8 @@ sfcc-cli-debug > .help
 .p        Evaluate On Server and print expression value
 .gb       Display all breakpoints
 .rb       remove breakpoint(s)
+.save     Save the debugger state (breakpoints) into a file
+.restore  Restore/Add the breakpoints
 .exit     Exit the repl
 ```
 
@@ -286,6 +288,11 @@ Debugger also supports evaluating command by directly entering it on the termina
 <img src="./images/eval.png" width="60%"><br>
 
 
+## Save/Restore
+
+This functionality can be used to save the debugger state(breakpoints) into a file. Breakpoints can be restored at a later stage.
+This is useful when a debugger crashes in between or program crashes for whatever reasons. In this scenarios you can save the debugger state and exit the program.
+
 ## Exit
 
 `.exit` is a standard repl command to exit out of the repl. `.exit` will also stop the debugger and release all breakpoint from the server
@@ -312,3 +319,5 @@ Command | Purpose
 .r | Resume to the next breakpoint location. If no next breakpoint location is found release the debugger.
 .l | print source code in terminal
 .p | Evaluate the expression in real-time and print its result
+.save | Save the debugger state (breakpoints) into a file
+.restore | Restore/Add the breakpoints
