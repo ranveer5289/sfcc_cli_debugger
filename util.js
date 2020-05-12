@@ -62,7 +62,8 @@ async function setBreakPoint(data, client) {
     } else {
         scriptPath = dataParts[1];
     }
-    const resp = await client.setBreakpoint(lineNumber, scriptPath);
+    const breakpoints = [{"line_number": Number(lineNumber), "script_path": scriptPath}];
+    const resp = await client.setBreakpoint(breakpoints);
     return resp;
 }
 
@@ -195,3 +196,4 @@ module.exports.setBreakPoint = setBreakPoint;
 module.exports.setBreakPointInteractive = setBreakPointInteractive;
 module.exports.cleanup = cleanup;
 module.exports.getAllFilesFromWorkspaces = getAllFilesFromWorkspaces;
+module.exports.getJSONFile = getJSONFile;

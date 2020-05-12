@@ -11,6 +11,7 @@ const configPath = argv.config || 'config.js';
 
 const sfccOptions = require(path.join(__dirname, dwConfigPath));
 const config = require(path.join(__dirname, configPath));
+const debuggerStateFile = path.join(__dirname, 'state.json');
 
 const debugMode= config.debug || false;
 const debuggerApi = require(path.join(__dirname, 'sfcc', 'debugger'));
@@ -256,11 +257,10 @@ replServer.defineCommand('save', {
                 const breakpointObj = breakpoints.map(function(brk) {
                     return {
                         script_path: brk.script,
-                        lint_number: brk.line
+                        line_number: brk.line
                     };
                 });
 
-                const debuggerStateFile = path.join(__dirname, 'state.json');
                 if (fs.existsSync(debuggerStateFile)) {
                     fs.unlinkSync(debuggerStateFile);
                 }
@@ -269,6 +269,24 @@ replServer.defineCommand('save', {
                 console.log(chalk.green('Debugger current state successfully saved'));
             } else {
                 console.log(chalk.red('No breakpoints found'));
+            }
+        } else {
+            console.log(chalk.red('Debugger not connected'));
+        }
+        this.displayPrompt();
+    }
+});
+
+replServer.defineCommand('restore', {
+    help: 'Restore debugger state',
+    async action(offset) {
+        this.clearBufferedCommand();
+        if (debuggerClient.connected) {
+            const breakpoints = util.getJSONFile(debuggerStateFile);
+            if (breakpoints) {
+                const resp = await debuggerClient.setBreakpoint(breakpoints);
+            } else {
+                console.log(chalk.red('No saved state found'));
             }
         } else {
             console.log(chalk.red('Debugger not connected'));
