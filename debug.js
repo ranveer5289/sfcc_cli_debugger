@@ -60,7 +60,6 @@ replServer.defineCommand('stop', {
     }
 });
 
-
 replServer.defineCommand('b', {
     help: 'Add a breakpoint',
     async action(data) {
@@ -267,8 +266,6 @@ replServer.defineCommand('save', {
 
                 fs.writeFileSync(debuggerStateFile, JSON.stringify(breakpointObj));
                 console.log(chalk.green('Debugger current state successfully saved'));
-            } else {
-                console.log(chalk.red('No breakpoints found'));
             }
         } else {
             console.log(chalk.red('Debugger not connected'));
