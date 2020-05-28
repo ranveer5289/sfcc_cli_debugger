@@ -33,6 +33,14 @@ class Debugger {
         this.debug = debug;
     }
 
+    /**
+     * Generic re-usable method to make SDAPI calls
+     *
+     * @param {Object} options options required for axios
+     * @param {String} action ID of the method which is making this call
+     * @returns {Object} output object
+     * @memberof Debugger
+     */
     async makeRequest(options, action) {
         if (!this.connected) {
             console.log(chalk.red('Debugger not connected'));
@@ -353,6 +361,13 @@ class Debugger {
         return value;
     }
 
+    /**
+     * Generic re-usable function to handle step operations
+     *
+     * @param {string} operation step-operation like over, into etc
+     * @returns
+     * @memberof Debugger
+     */
     async handleStepOperations(operation) {
         const currentThreadObj = await this.getCurrentThreadObject();
         if (!this.halted) {
