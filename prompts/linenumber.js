@@ -5,22 +5,22 @@ const path = require('path');
 
 
 const pathofLineNumberJSON = path.join(process.cwd(), 'linenumber.json');
-return inquirer
-  .prompt([
-    {
-        type: 'input',
-        name: 'linenumber',
-        message: "Where to add breakpoint?"
-      }
-  ])
-  .then(answers => {
-    fs.writeFileSync(pathofLineNumberJSON, JSON.stringify(answers));
-    console.log(chalk.greenBright('You selected linenumber: ' + answers.linenumber));
-  })
-  .catch(error => {
-    if(error.isTtyError) {
-      console.log('Prompt could not be rendered in the current environment');
-    } else {
-      console.log('Something went wrong ' + error);
-    }
-  });
+inquirer
+    .prompt([
+        {
+            type: 'input',
+            name: 'linenumber',
+            message: 'Where to add breakpoint?'
+        }
+    ])
+    .then((answers) => {
+        fs.writeFileSync(pathofLineNumberJSON, JSON.stringify(answers));
+        console.log(chalk.greenBright(`You selected linenumber: ${answers.linenumber}`));
+    })
+    .catch((error) => {
+        if (error.isTtyError) {
+            console.log('Prompt could not be rendered in the current environment');
+        } else {
+            console.log(`Something went wrong ${error}`);
+        }
+    });

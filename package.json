@@ -4,7 +4,7 @@
   "description": "SFCC Command line debugger",
   "main": "debug.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint ."
   },
   "author": "ranveer raghuwanshi",
   "license": "ISC",
@@ -15,5 +15,13 @@
     "inquirer": "^7.1.0",
     "inquirer-fuzzy-path": "^2.2.0",
     "yargs": "^15.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.20.0",
+    "eslint-plugin-react-hooks": "^2.5.0"
   }
 }
