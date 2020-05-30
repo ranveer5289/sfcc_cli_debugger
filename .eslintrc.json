@@ -2,13 +2,15 @@
     "env": {
         "node": true,
         "commonjs": true,
-        "es6": true
+        "es6": true,
+        "jest/globals": true
     },
     "extends": "airbnb",
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly"
     },
+    "plugins": ["jest"],
     "parserOptions": {
         "ecmaVersion": 11
     },

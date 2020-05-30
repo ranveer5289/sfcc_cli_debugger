@@ -48,7 +48,7 @@ class Debugger {
             return null;
         }
 
-        if (!options) {
+        if (!options || Object.keys(options).length === 0) {
             console.log(chalk.red('Options not supplied'));
             return null;
         }
@@ -117,7 +117,7 @@ class Debugger {
             this.connected = false;
             console.log(chalk.red('Debugger disconnected from server'));
         } else {
-            console.error(`Error deleting debugger client ${output.error}`);
+            console.log(`Error deleting debugger client ${output.error}`);
         }
     }
 
@@ -146,7 +146,7 @@ class Debugger {
             return responseData.breakpoints;
         }
 
-        console.error(chalk.red(`Error setting breakpoint ${output.error}`));
+        console.log(chalk.red(`Error setting breakpoint ${output.error}`));
         return null;
     }
 

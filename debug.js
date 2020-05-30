@@ -17,7 +17,6 @@ const debuggerStateFile = path.join(__dirname, 'state.json');
 const debugMode = config.debug || false;
 const DebuggerApi = require(path.join(__dirname, 'sfcc', 'debugger'));
 const debuggerClient = new DebuggerApi(debugMode, sfccOptions);
-
 const allFilesOfWorkspaces = util.getAllFilesFromWorkspaces(config);
 if (allFilesOfWorkspaces && allFilesOfWorkspaces.length > 0) {
     console.log(`Total files indexed ${allFilesOfWorkspaces.length}`);
