@@ -1,9 +1,10 @@
-const repl = require("repl");
+/* eslint-disable import/no-dynamic-require */
+const repl = require('repl');
 const chalk = require('chalk');
-const glob = require('glob');
 const path = require('path');
-const argv = require('yargs').argv
+const argv = require('yargs').argv;
 const fs = require('fs');
+
 const util = require(path.join(__dirname, 'util'));
 
 const dwConfigPath = argv.dwconfig || 'dw.json';
@@ -13,23 +14,16 @@ const sfccOptions = require(path.join(__dirname, dwConfigPath));
 const config = require(path.join(__dirname, configPath));
 const debuggerStateFile = path.join(__dirname, 'state.json');
 
-const debugMode= config.debug || false;
-const debuggerApi = require(path.join(__dirname, 'sfcc', 'debugger'));
-const debuggerClient = new debuggerApi(debugMode, sfccOptions);
-
+const debugMode = config.debug || false;
+const DebuggerApi = require(path.join(__dirname, 'sfcc', 'debugger'));
+const debuggerClient = new DebuggerApi(debugMode, sfccOptions);
 const allFilesOfWorkspaces = util.getAllFilesFromWorkspaces(config);
 if (allFilesOfWorkspaces && allFilesOfWorkspaces.length > 0) {
     console.log(`Total files indexed ${allFilesOfWorkspaces.length}`);
 }
 
-const replServer = repl.start({
-  prompt: "sfcc-cli-debug > ",
-  eval: evalOnSFCCServer,
-  useColors: true
-});
-
 async function evalOnSFCCServer(cmd, context, filename, callback) {
-    const commandWithoutLineBreaks = cmd.replace(/(\r\n|\n|\r)/gm, "");
+    const commandWithoutLineBreaks = cmd.replace(/(\r\n|\n|\r)/gm, '');
     if (commandWithoutLineBreaks.length > 0) {
         const expressionValue = await debuggerClient.getValueByEval(cmd);
         if (expressionValue && expressionValue.result) {
@@ -41,6 +35,12 @@ async function evalOnSFCCServer(cmd, context, filename, callback) {
         callback();
     }
 }
+
+const replServer = repl.start({
+    prompt: 'sfcc-cli-debug > ',
+    eval: evalOnSFCCServer,
+    useColors: true
+});
 
 replServer.defineCommand('start', {
     help: 'Attach a Debugger Client',
@@ -59,7 +59,6 @@ replServer.defineCommand('stop', {
         this.displayPrompt();
     }
 });
-
 
 replServer.defineCommand('b', {
     help: 'Add a breakpoint',
@@ -81,7 +80,7 @@ replServer.defineCommand('break', {
 
 replServer.defineCommand('bi', {
     help: 'Add a breakpoint interactively',
-    async action(data) {
+    async action() {
         this.clearBufferedCommand();
         await util.setBreakPointInteractive(debuggerClient, config, configPath);
         this.displayPrompt();
@@ -95,7 +94,7 @@ replServer.defineCommand('sbr', {
         await util.setBreakPoint(lineNumber, debuggerClient);
         // debugger will automatically be moved to new breakpoint location
         const success = await debuggerClient.resume();
-        if(success) {
+        if (success) {
             await util.printLines(null, debuggerClient, allFilesOfWorkspaces);
         }
         this.displayPrompt();
@@ -109,7 +108,7 @@ replServer.defineCommand('tbr', {
         const resp = await util.setBreakPoint(lineNumber, debuggerClient);
         // debugger will automatically be moved to new breakpoint location
         const success = await debuggerClient.resume();
-        if(success) {
+        if (success) {
             await util.printLines(null, debuggerClient, allFilesOfWorkspaces);
             // since this is a temporary breakpoint delete it now but in an async way
             if (resp && resp.length > 0) {
@@ -168,8 +167,8 @@ replServer.defineCommand('m', {
     async action(data) {
         this.clearBufferedCommand();
         const dataParts = data.split(',');
-        let variableName = dataParts[0];
-        let maxCount = dataParts[1];
+        const variableName = dataParts[0];
+        const maxCount = dataParts[1];
         const members = await debuggerClient.getMembersOfVariable(variableName, maxCount);
         if (members) {
             console.table(members);
@@ -233,7 +232,7 @@ replServer.defineCommand('r', {
         const success = await debuggerClient.resume();
         if (success) {
             await util.printLines(null, debuggerClient, allFilesOfWorkspaces);
-        } 
+        }
         this.displayPrompt();
     }
 });
@@ -249,17 +248,15 @@ replServer.defineCommand('l', {
 
 replServer.defineCommand('save', {
     help: 'Save debugger state',
-    async action(offset) {
+    async action() {
         this.clearBufferedCommand();
         if (debuggerClient.connected) {
             const breakpoints = await debuggerClient.getBreakpoints();
             if (breakpoints && breakpoints.length > 0) {
-                const breakpointObj = breakpoints.map(function(brk) {
-                    return {
-                        script_path: brk.script,
-                        line_number: brk.line
-                    };
-                });
+                const breakpointObj = breakpoints.map((brk) => ({
+                    script_path: brk.script,
+                    line_number: brk.line
+                }));
 
                 if (fs.existsSync(debuggerStateFile)) {
                     fs.unlinkSync(debuggerStateFile);
@@ -267,8 +264,6 @@ replServer.defineCommand('save', {
 
                 fs.writeFileSync(debuggerStateFile, JSON.stringify(breakpointObj));
                 console.log(chalk.green('Debugger current state successfully saved'));
-            } else {
-                console.log(chalk.red('No breakpoints found'));
             }
         } else {
             console.log(chalk.red('Debugger not connected'));
@@ -279,12 +274,12 @@ replServer.defineCommand('save', {
 
 replServer.defineCommand('restore', {
     help: 'Restore debugger state',
-    async action(offset) {
+    async action() {
         this.clearBufferedCommand();
         if (debuggerClient.connected) {
             const breakpoints = util.getJSONFile(debuggerStateFile);
             if (breakpoints) {
-                const resp = await debuggerClient.setBreakpoint(breakpoints);
+                await debuggerClient.setBreakpoint(breakpoints);
             } else {
                 console.log(chalk.red('No saved state found'));
             }
@@ -295,7 +290,7 @@ replServer.defineCommand('restore', {
     }
 });
 
-replServer.on('exit', async function() {
+replServer.on('exit', async () => {
     await debuggerClient.delete();
     // util.cleanup();
     process.exit();

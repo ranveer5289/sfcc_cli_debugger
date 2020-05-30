@@ -1,5 +1,6 @@
 const axios = require('axios');
 const chalk = require('chalk');
+
 const SFCC_DEBUGGER_CLIENT_ID = 'sfcc-cli-debugger';
 
 /**
@@ -14,13 +15,14 @@ class Debugger {
      * @param {Object} config sandbox configuration needed to attach a debugger
      * @memberof Debugger
      */
-    constructor (debug, config) {
-        const base64String = Buffer.from(config.username + ':' + config.password).toString('base64');
+    constructor(debug, config) {
+        const base64String = Buffer.from(`${config.username}:${config.password}`).toString('base64');
         const AUTH_HEADER = `Basic ${base64String}`;
         this.version = '2_0';
         this.BASE_DEBUGGER_URL = `https://${config.hostname}/s/-/dw/debugger/v${this.version}`;
         this.instance = axios.create({
-            headers : {
+            baseURL: this.BASE_DEBUGGER_URL,
+            headers: {
                 authorization: AUTH_HEADER,
                 'x-dw-client-id': SFCC_DEBUGGER_CLIENT_ID,
                 'content-type': 'application/json'
@@ -33,15 +35,61 @@ class Debugger {
     }
 
     /**
+     * Generic re-usable method to make SDAPI calls
+     *
+     * @param {Object} options options required for axios
+     * @param {String} action ID of the method which is making this call
+     * @returns {null|Object} output object
+     * @memberof Debugger
+     */
+    async makeRequest(options, action) {
+        if (!this.connected) {
+            console.log(chalk.red('Debugger not connected'));
+            return null;
+        }
+
+        if (!options || Object.keys(options).length === 0) {
+            console.log(chalk.red('Options not supplied'));
+            return null;
+        }
+        if (this.debug) {
+            console.log(`Request Url for ${action}: ${this.instance.defaults.baseURL}${options.url}`);
+            if (options) {
+                console.log(`Request options for ${action}: ${JSON.stringify(options)}`);
+            }
+        }
+
+        const output = {};
+        try {
+            const response = await this.instance.request(options);
+            if (response && [204, 200].includes(response.status)) {
+                if (response.data && this.debug) {
+                    console.log(`Response body for ${action}: ${JSON.stringify(response.data)}`);
+                }
+                output.response = response;
+                output.success = true;
+            } else {
+                output.error = 'Something Happened....';
+            }
+        } catch (error) {
+            output.error = error;
+        }
+        if (this.debug) {
+            console.log(new Array(100).fill('-').join(''));
+        }
+        return output;
+    }
+
+    /**
      * Creates the Client and enables the debugger
      *
      * @memberof Debugger
      */
     async create() {
         try {
-            const url = this.BASE_DEBUGGER_URL + '/client';
+            const url = `${this.BASE_DEBUGGER_URL}/client`;
             if (this.debug) {
-                console.log(chalk.green('Going to create debugger client ' + url));
+                console.log(chalk.green(`Going to create debugger client ${url}`));
             }
             const response = await this.instance.post(url);
             if (response && response.status === 204) {
@@ -49,29 +97,27 @@ class Debugger {
                 console.log(chalk.green('Debugger listening on server'));
             }
         } catch (error) {
-            console.error('Error creating debugger client ' + error);
+            console.error(`Error creating debugger client ${error}`);
         }
     }
 
     /**
-     * Removes all breakpoints, resumes all halted script threads and 
+     * Removes all breakpoints, resumes all halted script threads and
      * disables the debugger by deleting the Client.
      *
      * @memberof Debugger
      */
     async delete() {
-        try {
-            const url = this.BASE_DEBUGGER_URL + '/client';
-            if (this.debug) {
-                console.log(chalk.green('Going to delete debugger client ' + url));
-            }
-            const response = await this.instance.delete(url);
-            if (response !== null && response.status === 204) {
-                this.connected = false;
-                console.log(chalk.red('Debugger disconnected from server'));
-            }
-        } catch (error) {
-            console.error('Error deleting debugger client ' + error);
+        const options = {
+            url: '/client',
+            method: 'delete'
+        };
+        const output = await this.makeRequest(options, 'delete_debugger');
+        if (output && output.response) {
+            this.connected = false;
+            console.log(chalk.red('Debugger disconnected from server'));
+        } else {
+            console.log(`Error deleting debugger client ${output.error}`);
         }
     }
 
@@ -83,34 +129,25 @@ class Debugger {
      * @memberof Debugger
      */
     async setBreakpoint(breakpoints) {
-        if (!this.connected) {
-            console.log(chalk.red('Debugger not connected'));
-            return;
+        const options = {
+            url: '/breakpoints',
+            method: 'post',
+            data: {
+                _v: this.version,
+                breakpoints: breakpoints
+            }
+        };
+        const output = await this.makeRequest(options, 'set_breakpoint');
+        if (output.success && output.response && output.response.data) {
+            const responseData = output.response.data;
+            responseData.breakpoints.forEach(function (brk) {
+                console.log(chalk.green(`Breakpoint successfully set at location ${brk.script_path} and line number ${brk.line_number}`));
+            });
+            return responseData.breakpoints;
         }
-        try {
-            const url = this.BASE_DEBUGGER_URL + '/breakpoints';
-            const data = {
-                '_v' : this.version,
-                'breakpoints' : breakpoints
-            }
-            if (this.debug) {
-                console.log(chalk.green('Request data for setBreakPoint call: '));
-                console.log(data);
-            }
-            const response = await this.instance.post(url, data);
-            if (this.debug & response.data) {
-                console.log(chalk.green(response.data));
-            }
-            if (response !== null && response.status === 200 && response.data) {
-                response.data.breakpoints.forEach(function(brk) {
-                    console.log(chalk.green(`Breakpoint successfully set at location ${brk.script_path} and line number ${brk.line_number}`));
-                });
-                return response.data.breakpoints;
-            }
-        } catch (error) {
-            console.error(chalk.red('Error setting breakpoint ' + error));
-        }
-        return;
+
+        console.log(chalk.red(`Error setting breakpoint ${output.error}`));
+        return null;
     }
 
     /**
@@ -121,35 +158,30 @@ class Debugger {
      */
     async getBreakpoints() {
         let breakpoints = [];
-        if (!this.connected) {
-            console.log(chalk.red('Debugger not connected'));
-            return;
-        }
-        try {
-            const url = this.BASE_DEBUGGER_URL + '/breakpoints';
-            if (this.debug) {
-                console.log(chalk.green('Going to get all breakpoints ' + url));
-            }
-            const response = await this.instance.get(url);
-            if (this.debug & response.data) {
-                console.log(response.data.breakpoints);
-            }
-            if (response !== null && response.status === 200 && response.data.breakpoints) {
-                console.log(chalk.green('Breakpoints are set at following locations: '));
-                breakpoints = response.data.breakpoints.map(function(bp) {
-                    return {
-                        breakpoint_id: bp.id,
-                        script: bp.script_path,
-                        line: bp.line_number
-                    };
-                });
-                console.table(breakpoints);
-            } else {
+        const options = {
+            url: '/breakpoints',
+            method: 'get'
+        };
+
+        const output = await this.makeRequest(options, 'get_breakpoint');
+        if (output.success && output.response && output.response.data) {
+            const responseData = output.response.data;
+            if (!responseData.breakpoints) {
                 console.log(chalk.green('No breakpoints currently set'));
+                return [];
             }
-        } catch (error) {
-            console.error(chalk.red('Error setting breakpoint ' + error));
+            breakpoints = responseData.breakpoints.map(function (bp) {
+                return {
+                    breakpoint_id: bp.id,
+                    script: bp.script_path,
+                    line: bp.line_number
+                };
+            });
+            console.table(breakpoints);
+        } else {
+            console.log(chalk.red(`Error setting breakpoint ${output.error}`));
         }
+
         return breakpoints;
     }
 
@@ -163,29 +195,22 @@ class Debugger {
      * @memberof Debugger
      */
     async deleteBreakpoints(brkpID, silent) {
-        if (!this.connected) {
-            console.log(chalk.red('Debugger not connected'));
-            return;
+        let url = '/breakpoints';
+        if (brkpID) {
+            url = `${url}/${brkpID}`;
         }
-        try {
-            let url = this.BASE_DEBUGGER_URL + '/breakpoints';
-            if (brkpID) {
-                url = url + '/' + brkpID;
+        const options = {
+            url: url,
+            method: 'delete'
+        };
+        const output = await this.makeRequest(options, 'delete_breakpoint');
+        if (output && output.response) {
+            if (!silent) {
+                // eslint-disable-next-line no-unused-expressions
+                brkpID ? console.log(chalk.green('breakpoint removed')) : console.log(chalk.green('All breakpoints removed'));
             }
-            if (this.debug) {
-                console.log(chalk.green('Going to delete breakpoints ' + url));
-            }
-            const response = await this.instance.delete(url);
-
-            if (response !== null && response.status === 204) {
-                if (!silent) {
-                    brkpID ? console.log(chalk.green('breakpoint removed')) : console.log(chalk.green('All breakpoints removed'));
-                }
-            } else {
-                console.log(chalk.green('No breakpoints currently set'));
-            }
-        } catch (error) {
-            console.error(chalk.red('Error deleting breakpoint ' + error));
+        } else {
+            console.error(chalk.red(`Error deleting breakpoint ${output.error}`));
         }
     }
 
@@ -197,83 +222,77 @@ class Debugger {
      * @memberof Debugger
      */
     async getCurrentThreadObject() {
-        if (!this.connected) {
-            console.log(chalk.red('Debugger not connected'));
-            return;
-        }
-        let threadObj = {};
-        try {
-            const url = this.BASE_DEBUGGER_URL + '/threads';
-    
-            const response = await this.instance.get(url);
-            if (this.debug & response.data) {
-                console.log(response.data)
+        const threadObj = {};
+        const options = {
+            url: '/threads',
+            method: 'get'
+        };
+        const output = await this.makeRequest(options, 'get_current_thread');
+        if (output && output.response && output.response.data) {
+            const responseData = output.response.data;
+            if (!responseData.script_threads) {
+                console.log(chalk.red('Debugger not halted'));
+                return threadObj;
             }
-            if (response && response.status === 200 && response.data.script_threads) {
-                const scriptThreads = response.data.script_threads.filter(function(thread) {
-                    return thread.status === 'halted';
-                });
-    
-                if (scriptThreads  && scriptThreads.length > 0) {
-                    const scriptThread = scriptThreads[0];
-                    if (scriptThread) {
-                        this.halted = true;
-                        threadObj.id = scriptThread.id;
-                        threadObj.lineNumber = scriptThread.call_stack[0].location.line_number;
-                        threadObj.scriptPath = scriptThread.call_stack[0].location.script_path;
-                    }
-                } else {
-                    console.log(chalk.red('Debugger not halted'));
+            const scriptThreads = responseData.script_threads.filter(function (thread) {
+                return thread.status === 'halted';
+            });
+
+            if (scriptThreads && scriptThreads.length > 0) {
+                const scriptThread = scriptThreads[0];
+                if (scriptThread) {
+                    this.halted = true;
+                    threadObj.id = scriptThread.id;
+                    threadObj.lineNumber = scriptThread.call_stack[0].location.line_number;
+                    threadObj.scriptPath = scriptThread.call_stack[0].location.script_path;
                 }
             } else {
                 console.log(chalk.red('Debugger not halted'));
             }
-        } catch (error) {
-            console.error(chalk.thread('Error getting current thread id ' + error));
+        } else {
+            console.error(chalk.thread(`Error getting current thread id ${output.error}`));
         }
         return threadObj;
     }
 
     /**
-     * Returns the variables in the context of the specified thread and frame scope and all inclosing scopes.
+     * Returns the variables in the context of the specified thread and
+     * frame scope and all inclosing scopes.
      *
      * @returns {object} all variables
      * @memberof Debugger
      */
     async getVariables() {
         let variables = [];
-        if (!this.connected) {
-            console.log(chalk.red('Debugger not connected'));
-            return;
+        const currentThreadObj = await this.getCurrentThreadObject();
+        if (!this.halted) {
+            return null;
         }
-        try {
-            const currentThreadObj = await this.getCurrentThreadObject();
-            if (!this.halted) {
-                return;
+        const url = `/threads/${currentThreadObj.id}/frames/0/variables`;
+        const options = {
+            url: url,
+            method: 'get'
+        };
+        const output = await this.makeRequest(options, 'get_variables');
+        if (output && output.response && output.response.data) {
+            const responseData = output.response.data;
+            if (!responseData.object_members) {
+                console.log(chalk.red('Error getting variables from server'));
+                return variables;
             }
-            const url = this.BASE_DEBUGGER_URL + '/threads/' + currentThreadObj.id + '/frames/0/variables';
-    
-            const response = await this.instance.get(url);
-            if (this.debug & response.data) {
-                console.log(response.data)
-            }
-            if (response && response.status === 200 && response.data.object_members) {
-                variables = response.data.object_members.filter(function(member){
-                    return member.type !== 'Function';
-                }).map(function(member) {
-                    return {
-                        name: member.name,
-                        type: member.type,
-                        value: member.value.length > 50 ? member.value.substr(0,50) + '....' : member.value
-                    };
-                });
-            } else {
-                console.error(chalk.red('Error getting variables from server'));
-            }
-        } catch (error) {
-            console.error(chalk.red('Error getting variables from server ' + error));
+            variables = responseData.object_members.filter(function (member) {
+                return member.type !== 'Function';
+            }).map(function (member) {
+                return {
+                    name: member.name,
+                    type: member.type,
+                    value: member.value.length > 50 ? `${member.value.substr(0, 50)}....` : member.value
+                };
+            });
+        } else {
+            console.error(chalk.red(`Error getting variables from server ${output.error}`));
         }
-        return variables
+        return variables;
     }
 
     /**
@@ -285,42 +304,35 @@ class Debugger {
      * @memberof Debugger
      */
     async getMembersOfVariable(variableName, maxCount) {
-        if (!this.connected) {
-            console.log(chalk.red('Debugger not connected'));
-            return;
-        }
-
         let members = [];
-        try {
-            const currentThreadObj = await this.getCurrentThreadObject();
-            if (!this.halted) {
-                return;
+        const currentThreadObj = await this.getCurrentThreadObject();
+        if (!this.halted) {
+            return null;
+        }
+        const url = `/threads/${currentThreadObj.id}/frames/0/members?object_path=${variableName}`;
+        const options = {
+            url: url,
+            method: 'get'
+        };
+        const output = await this.makeRequest(options, 'get_members');
+        if (output && output.response && output.response.data) {
+            const responseData = output.response.data;
+            if (!responseData.object_members) {
+                console.log(chalk.red('Error getting members from server'));
+                return members;
             }
-            const url = this.BASE_DEBUGGER_URL + '/threads/' + currentThreadObj.id + '/frames/0/members?object_path=' + variableName;
-            if (this.debug) {
-                console.log(chalk.green('Going to retrieve members from ') + url);
-            }
-            const response = await this.instance.get(url);
-            if (this.debug & response.data) {
-                console.log(response.data)
-            }
-            if (response && response.status === 200 && response.data.object_members) {
-                members = response.data.object_members.filter(function(member) {
-                    return member.type !== 'Function';
-                }).map(function(member) {
-                    return {
-                        name: member.name,
-                        type: member.type,
-                        value: member.value.length > 50 ? member.value.substr(0,50) + '....' : member.value
-                    };
-                });
-    
-                members = members.slice(0, maxCount);
-            } else {
-                console.error(chalk.red('Error getting members from server'));
-            }
-        } catch (error) {
-            console.error(chalk.red('Error getting members from server ' + error));
+            members = responseData.object_members.filter(function (member) {
+                return member.type !== 'Function';
+            }).map(function (member) {
+                return {
+                    name: member.name,
+                    type: member.type,
+                    value: member.value.length > 50 ? `${member.value.substr(0, 50)}....` : member.value
+                };
+            });
+            members = members.slice(0, maxCount);
+        } else {
+            console.error(chalk.red(`Error getting members from server ${output.error}`));
         }
         return members;
     }
@@ -333,67 +345,67 @@ class Debugger {
      * @memberof Debugger
      */
     async getValueByEval(expression) {
-        if (!this.connected) {
-            console.log(chalk.red('Debugger not connected'));
-            return;
+        let value = null;
+        const currentThreadObj = await this.getCurrentThreadObject();
+        if (!this.halted) {
+            return null;
         }
-        let value = {};
-        try {
-            const currentThreadObj = await this.getCurrentThreadObject();
-            if (!this.halted) {
-                return;
-            }
-            const url = this.BASE_DEBUGGER_URL + '/threads/' + currentThreadObj.id + '/frames/0/eval?expr=' + encodeURIComponent(expression);
-            if (this.debug) {
-                console.log(chalk.green('Going to eval expression from ') + expression);
-            }
-            const response = await this.instance.get(url);
-            if (this.debug & response.data) {
-                console.log(response.data)
-            }
-            if (response && response.status === 200 && response.data) {
-               value = response.data;
-            }
-        } catch (error) {
-            console.error('Error evaluating value from server ' + error);
+        const url = `/threads/${currentThreadObj.id}/frames/0/eval?expr=${encodeURIComponent(expression)}`;
+        const options = {
+            url: url,
+            method: 'get'
+        };
+        const output = await this.makeRequest(options, 'get_value_eval');
+        if (output && output.response && output.response.data) {
+            value = output.response.data.value;
+        } else {
+            console.error(`Error evaluating value from server ${output.error}`);
         }
         return value;
     }
 
     /**
-     * Directs the script thread to step over the current thread location to the next line in the script.
+     * Generic re-usable function to handle step operations
+     *
+     * @param {string} operation step-operation like over, into etc
+     * @returns
+     * @memberof Debugger
+     */
+    async handleStepOperations(operation) {
+        const currentThreadObj = await this.getCurrentThreadObject();
+        if (!this.halted) {
+            return null;
+        }
+        const url = `/threads/${currentThreadObj.id}/${operation}`;
+        const options = {
+            url: url,
+            method: 'post'
+        };
+        const output = await this.makeRequest(options, `step_${operation}`);
+        if (output && output.response && output.response.data) {
+            const responseData = output.response.data;
+            if (responseData.call_stack && responseData.call_stack.length > 0) {
+                const currentCallStack = responseData.call_stack[0];
+                return {
+                    lineNumber: currentCallStack.location.line_number,
+                    scriptPath: currentCallStack.location.script_path
+                };
+            }
+        } else {
+            console.error(`Error in step-${operation} ${output.error}`);
+        }
+        return null;
+    }
+
+    /**
+     * Directs the script thread to step over
+     * the current thread location to the next line in the script.
      *
      * @returns
      * @memberof Debugger
      */
     async stepOver() {
-        if (!this.connected) {
-            console.log(chalk.red('Debugger not connected'));
-            return;
-        }
-        try {
-            const currentThreadObj = await this.getCurrentThreadObject();
-            if (!this.halted) {
-                return;
-            }
-            const url = this.BASE_DEBUGGER_URL + '/threads/' + currentThreadObj.id + '/over';
-    
-            const response = await this.instance.post(url);
-            if (this.debug & response.data) {
-                console.log(response.data)
-            }
-           if (response !== null && response.status === 200 && response.data && response.data.call_stack) {
-               // todo: handle call stack exhaustion
-               const currentCallStack = response.data.call_stack[0];
-               return {
-                   lineNumber: currentCallStack.location.line_number,
-                   scriptPath: currentCallStack.location.script_path
-               }
-           }
-        } catch (error) {
-            console.error('Error in step-over ' + error);
-        }
-        return;
+        return this.handleStepOperations('over');
     }
 
     /**
@@ -403,104 +415,30 @@ class Debugger {
      * @memberof Debugger
      */
     async stepInto() {
-        if (!this.connected) {
-            console.log(chalk.red('Debugger not connected'));
-            return;
-        }
-        try {
-            const currentThreadObj = await this.getCurrentThreadObject();
-            if (!this.halted) {
-                return;
-            }
-            const url = this.BASE_DEBUGGER_URL + '/threads/' + currentThreadObj.id + '/into';
-    
-            const response = await this.instance.post(url);
-            if (this.debug & response.data) {
-                console.log(response.data)
-            }
-           if (response !== null && response.status === 200 && response.data && response.data.call_stack) {
-               // todo: handle call stack exhaustion
-               const currentCallStack = response.data.call_stack[0];
-               return {
-                   lineNumber: currentCallStack.location.line_number,
-                   scriptPath: currentCallStack.location.script_path
-               }
-           }
-        } catch (error) {
-            console.error('Error in step-into ' + error);
-        }
-        return;
+        return this.handleStepOperations('into');
     }
 
     /**
-     * Directs the script thread to step out of the current thread location and to return to the parent in the call stack.
+     * Directs the script thread to step out
+     * of the current thread location and to return to the parent in the call stack.
      *
      * @returns
      * @memberof Debugger
      */
     async stepOut() {
-        if (!this.connected) {
-            console.log(chalk.red('Debugger not connected'));
-            return;
-        }
-        try {
-            const currentThreadObj = await this.getCurrentThreadObject();
-            if (!this.halted) {
-                return;
-            }
-            const url = this.BASE_DEBUGGER_URL + '/threads/' + currentThreadObj.id + '/out';
-    
-            const response = await this.instance.post(url);
-            if (this.debug & response.data) {
-                console.log(response.data)
-            }
-           if (response !== null && response.status === 200 && response.data && response.data.call_stack) {
-               // todo: handle call stack exhaustion
-               const currentCallStack = response.data.call_stack[0];
-               if (currentCallStack && currentCallStack.length > 0) {
-                   return {
-                       lineNumber: currentCallStack.location.line_number,
-                       scriptPath: currentCallStack.location.script_path
-                   }
-               }
-           }
-        } catch (error) {
-            console.error('Error in step-out ' + error);
-        }
-        return;
+        return this.handleStepOperations('out');
     }
 
     /**
-     * Directs the script thread to resume the execution of the script. 
-     * Depending on the script location and breakpoints, 
+     * Directs the script thread to resume the execution of the script.
+     * Depending on the script location and breakpoints,
      * calling resume can result in the thread stopping at another breakpoint as well
      *
      * @returns
      * @memberof Debugger
      */
-    async  resume() {
-        if (!this.connected) {
-            console.log(chalk.red('Debugger not connected'));
-            return;
-        }
-        try {
-            const currentThreadObj = await this.getCurrentThreadObject();
-            if (!this.halted) {
-                return;
-            }
-            const url = this.BASE_DEBUGGER_URL + '/threads/' + currentThreadObj.id + '/resume';
-            const response = await this.instance.post(url);
-            if (this.debug & response.data) {
-                console.log(response.data)
-            }
-           if (response !== null && response.status === 200) {
-                console.log(chalk.green('Debugger resumed'));
-                return true;
-           }
-        } catch (error) {
-            console.error('Error in resume ' + error);
-        }
-        return;
+    async resume() {
+        return this.handleStepOperations('resume');
     }
 }
 
