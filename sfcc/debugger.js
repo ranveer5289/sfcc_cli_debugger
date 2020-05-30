@@ -179,7 +179,7 @@ class Debugger {
             });
             console.table(breakpoints);
         } else {
-            console.error(chalk.red(`Error setting breakpoint ${output.error}`));
+            console.log(chalk.red(`Error setting breakpoint ${output.error}`));
         }
 
         return breakpoints;

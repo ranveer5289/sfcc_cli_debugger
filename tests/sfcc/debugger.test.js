@@ -152,4 +152,118 @@ describe('SFCC Debugger Class', function () {
 
         spy.mockRestore();
     });
+
+    it('getBreakPoints', async function () {
+        chalk.red = jest.fn(function (msg) { return msg; });
+        const spy = jest.spyOn(console, 'table').mockImplementation();
+
+        const mockBreakpointResponse = {
+            breakpoints: [
+                {
+                    script_path: '/some/path.js',
+                    line_number: 12,
+                    id: 1
+                }
+            ]
+        };
+
+        const expectedResponse = [
+            {
+                breakpoint_id: 1,
+                script: '/some/path.js',
+                line: 12
+            }
+        ];
+
+        const debuggerClient = new DebuggerClass(false, {});
+        debuggerClient.makeRequest = jest.fn(function () {
+            return Promise.resolve({
+                success: true,
+                response: {
+                    data: mockBreakpointResponse
+                }
+            });
+        });
+        const output = await debuggerClient.getBreakpoints();
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(console.table).toHaveBeenLastCalledWith(expectedResponse);
+        expect(output).toMatchObject(expectedResponse);
+
+        spy.mockRestore();
+    });
+
+    it('getBreakPoints not successful', async function () {
+        chalk.red = jest.fn(function (msg) { return msg; });
+        const spy = jest.spyOn(console, 'log').mockImplementation();
+
+        const debuggerClient = new DebuggerClass(false, {});
+        debuggerClient.makeRequest = jest.fn(function () {
+            return Promise.resolve({
+                error: 'some error'
+            });
+        });
+        const output = await debuggerClient.getBreakpoints();
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenLastCalledWith('Error setting breakpoint some error');
+        expect(output).toMatchObject([]);
+
+        spy.mockRestore();
+    });
+
+    it('delete all breakpoints', async function () {
+        chalk.green = jest.fn(function (msg) { return msg; });
+        const spy = jest.spyOn(console, 'log').mockImplementation();
+        const mockOptions = {
+            url: '/breakpoints',
+            method: 'delete'
+        };
+
+        const debuggerClient = new DebuggerClass(false, {});
+        debuggerClient.makeRequest = jest.fn(function () {
+            return Promise.resolve({
+                success: true,
+                response: {
+                    data: 'some data'
+                }
+            });
+        });
+        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest');
+
+        await debuggerClient.deleteBreakpoints();
+
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, 'delete_breakpoint');
+        expect(console.log).toHaveBeenLastCalledWith('All breakpoints removed');
+
+        spy.mockRestore();
+    });
+
+    it('delete single breakpoints', async function () {
+        chalk.green = jest.fn(function (msg) { return msg; });
+        const spy = jest.spyOn(console, 'log').mockImplementation();
+        const mockOptions = {
+            url: '/breakpoints/1',
+            method: 'delete'
+        };
+
+        const debuggerClient = new DebuggerClass(false, {});
+        debuggerClient.makeRequest = jest.fn(function () {
+            return Promise.resolve({
+                success: true,
+                response: {
+                    data: 'some data'
+                }
+            });
+        });
+
+        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest');
+
+        await debuggerClient.deleteBreakpoints(1);
+
+        expect(spy).toHaveBeenCalledTimes(1);
+        expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, 'delete_breakpoint');
+        expect(console.log).toHaveBeenLastCalledWith('breakpoint removed');
+
+        spy.mockRestore();
+    });
 });
