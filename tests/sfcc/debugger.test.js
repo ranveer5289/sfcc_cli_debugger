@@ -56,7 +56,7 @@ describe('SFCC Debugger Class', function () {
         expect(output.error).toBe('Something Happened....');
     });
 
-    it('create', async function () {
+    it('create debugger', async function () {
         axios.create = jest.fn(function () { return axios; });
         chalk.green = jest.fn(function (msg) { return msg; });
         const spy = jest.spyOn(console, 'log').mockImplementation();
@@ -72,7 +72,7 @@ describe('SFCC Debugger Class', function () {
         spy.mockRestore();
     });
 
-    it('delete', async function () {
+    it('delete debugger', async function () {
         chalk.red = jest.fn(function (msg) { return msg; });
         const spy = jest.spyOn(console, 'log').mockImplementation();
 
@@ -89,7 +89,7 @@ describe('SFCC Debugger Class', function () {
         spy.mockRestore();
     });
 
-    it('delete not successful', async function () {
+    it('delete debugger not successful', async function () {
         const spy = jest.spyOn(console, 'log').mockImplementation();
 
         const debuggerClient = new DebuggerClass(false, {});
@@ -265,5 +265,243 @@ describe('SFCC Debugger Class', function () {
         expect(console.log).toHaveBeenLastCalledWith('breakpoint removed');
 
         spy.mockRestore();
+    });
+
+    it('get current thread', async function () {
+        const mockOptions = {
+            url: '/threads',
+            method: 'get'
+        };
+
+        const mockOutput = {
+            id: 2,
+            lineNumber: 1,
+            scriptPath: '/some/path.js'
+        };
+
+        const debuggerClient = new DebuggerClass(false, {});
+        debuggerClient.makeRequest = jest.fn(function () {
+            return Promise.resolve({
+                success: true,
+                response: {
+                    data: {
+                        _v: '2.0',
+                        script_threads: [
+                            {
+                                call_stack: [
+                                    {
+                                        index: 0,
+                                        location: {
+                                            function_name: 'show()',
+                                            line_number: 1,
+                                            script_path: '/some/path.js'
+                                        }
+                                    }
+                                ],
+                                id: 2,
+                                status: 'halted'
+                            }
+                        ]
+                    }
+                }
+            });
+        });
+
+        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest');
+
+        const output = await debuggerClient.getCurrentThreadObject();
+
+        expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, 'get_current_thread');
+        expect(output).toMatchObject(mockOutput);
+        expect(debuggerClient.halted).toBe(true);
+    });
+
+    it('get variables', async function () {
+        const mockOptions = {
+            url: '/threads/1/frames/0/variables',
+            method: 'get'
+        };
+
+        const mockOutput = [{
+            name: 'apiProductSearch',
+            type: 'dw.catalog.ProductSearchModel',
+            value: '[ProductSearchModel id=26557335]'
+        }];
+
+        const debuggerClient = new DebuggerClass(false, {});
+        debuggerClient.halted = true;
+
+        debuggerClient.getCurrentThreadObject = jest.fn(function () {
+            return Promise.resolve({
+                id: 1
+            });
+        });
+
+        debuggerClient.makeRequest = jest.fn(function () {
+            return Promise.resolve({
+                success: true,
+                response: {
+                    data: {
+                        _v: '2.0',
+                        count: 1,
+                        object_members: [
+                            {
+                                name: 'apiProductSearch',
+                                parent: '',
+                                scope: 'closure',
+                                type: 'dw.catalog.ProductSearchModel',
+                                value: '[ProductSearchModel id=26557335]'
+                            }
+                        ]
+                    }
+                }
+            });
+        });
+
+        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest');
+
+        const output = await debuggerClient.getVariables();
+
+        expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, 'get_variables');
+        expect(output).toMatchObject(mockOutput);
+    });
+
+    it('get members of variables', async function () {
+        const variableName = 'apiProduct';
+        const threadId = 1;
+        const mockOptions = {
+            url: `/threads/${threadId}/frames/0/members?object_path=${variableName}`,
+            method: 'get'
+        };
+
+        const mockOutput = [{
+            name: 'apiProductSearch',
+            type: 'dw.catalog.ProductSearchModel',
+            value: '[ProductSearchModel id=26557335]'
+        }];
+
+        const debuggerClient = new DebuggerClass(false, {});
+        debuggerClient.halted = true;
+
+        debuggerClient.getCurrentThreadObject = jest.fn(function () {
+            return Promise.resolve({
+                id: threadId
+            });
+        });
+
+        debuggerClient.makeRequest = jest.fn(function () {
+            return Promise.resolve({
+                success: true,
+                response: {
+                    data: {
+                        _v: '2.0',
+                        count: 1,
+                        object_members: [
+                            {
+                                name: 'apiProductSearch',
+                                parent: '',
+                                scope: 'closure',
+                                type: 'dw.catalog.ProductSearchModel',
+                                value: '[ProductSearchModel id=26557335]'
+                            }
+                        ]
+                    }
+                }
+            });
+        });
+
+        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest');
+
+        const output = await debuggerClient.getMembersOfVariable(variableName);
+
+        expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, 'get_members');
+        expect(output).toMatchObject(mockOutput);
+    });
+
+    it('eval on server', async function () {
+        const expression = 'apiProduct';
+        const threadId = 1;
+        const mockOptions = {
+            url: `/threads/${threadId}/frames/0/eval?expr=${encodeURIComponent(expression)}`,
+            method: 'get'
+        };
+
+        const debuggerClient = new DebuggerClass(false, {});
+        debuggerClient.halted = true;
+
+        debuggerClient.getCurrentThreadObject = jest.fn(function () {
+            return Promise.resolve({
+                id: threadId
+            });
+        });
+
+        debuggerClient.makeRequest = jest.fn(function () {
+            return Promise.resolve({
+                success: true,
+                response: {
+                    data: {
+                        value: 'some value'
+                    }
+                }
+            });
+        });
+
+        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest');
+
+        const output = await debuggerClient.getValueByEval(expression);
+
+        expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, 'get_value_eval');
+        expect(output).toBe('some value');
+    });
+
+    it('handle step operations', async function () {
+        const operation = 'over';
+        const threadId = 1;
+        const mockOptions = {
+            url: `/threads/${threadId}/${operation}`,
+            method: 'post'
+        };
+
+        const mockOutput = {
+            lineNumber: 1,
+            scriptPath: '/some/path.js'
+        };
+
+        const debuggerClient = new DebuggerClass(false, {});
+        debuggerClient.halted = true;
+
+        debuggerClient.getCurrentThreadObject = jest.fn(function () {
+            return Promise.resolve({
+                id: threadId
+            });
+        });
+
+        debuggerClient.makeRequest = jest.fn(function () {
+            return Promise.resolve({
+                success: true,
+                response: {
+                    data: {
+                        _v: '2.0',
+                        call_stack: [
+                            {
+                                index: 0,
+                                location: {
+                                    function_name: 'show()',
+                                    line_number: mockOutput.lineNumber,
+                                    script_path: mockOutput.scriptPath
+                                }
+                            }
+                        ]
+                    }
+                }
+            });
+        });
+
+        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest');
+
+        const output = await debuggerClient.handleStepOperations(operation);
+
+        expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, `step_${operation}`);
+        expect(output).toMatchObject(mockOutput);
     });
 });

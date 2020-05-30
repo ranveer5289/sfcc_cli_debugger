@@ -345,7 +345,7 @@ class Debugger {
      * @memberof Debugger
      */
     async getValueByEval(expression) {
-        let value = {};
+        let value = null;
         const currentThreadObj = await this.getCurrentThreadObject();
         if (!this.halted) {
             return null;
