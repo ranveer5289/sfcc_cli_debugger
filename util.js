@@ -8,6 +8,19 @@ const os = require('os');
 const pathofFilePathJSON = path.join(process.cwd(), 'filepath.json');
 const pathofLineNumberJSON = path.join(process.cwd(), 'linenumber.json');
 
+/**
+ * Return base64 encoded auth header
+ *
+ * @param {string} username
+ * @param {string} password
+ * @returns {string} base64 encoded header
+ */
+function getAuthorizationHeader(username, password) {
+    const base64String = Buffer.from(`${username}:${password}`).toString('base64');
+    const AUTH_HEADER = `Basic ${base64String}`;
+    return AUTH_HEADER;
+}
+
 function getCompleteFilePath(partialPath, allFilesOfWorkspaces) {
     for (let i = 0; i < allFilesOfWorkspaces.length; i += 1) {
         const f = allFilesOfWorkspaces[i];
@@ -201,3 +214,4 @@ module.exports.setBreakPointInteractive = setBreakPointInteractive;
 module.exports.cleanup = cleanup;
 module.exports.getAllFilesFromWorkspaces = getAllFilesFromWorkspaces;
 module.exports.getJSONFile = getJSONFile;
+module.exports.getAuthorizationHeader = getAuthorizationHeader;

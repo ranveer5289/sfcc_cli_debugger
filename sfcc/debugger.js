@@ -1,5 +1,9 @@
+/* eslint-disable import/no-dynamic-require */
 const axios = require('axios');
 const chalk = require('chalk');
+const path = require('path');
+
+const util = require(path.join(__dirname, '..', 'util'));
 
 const SFCC_DEBUGGER_CLIENT_ID = 'sfcc-cli-debugger';
 
@@ -16,8 +20,7 @@ class Debugger {
      * @memberof Debugger
      */
     constructor(debug, config) {
-        const base64String = Buffer.from(`${config.username}:${config.password}`).toString('base64');
-        const AUTH_HEADER = `Basic ${base64String}`;
+        const AUTH_HEADER = util.getAuthorizationHeader(config.username, config.password);
         this.version = '2_0';
         this.BASE_DEBUGGER_URL = `https://${config.hostname}/s/-/dw/debugger/v${this.version}`;
         this.instance = axios.create({
