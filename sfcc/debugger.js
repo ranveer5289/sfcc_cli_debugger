@@ -10,7 +10,7 @@ const SFCC_DEBUGGER_CLIENT_ID = 'sfcc-cli-debugger';
  */
 class Debugger {
     /**
-     *Creates an instance of Debugger.
+     * Creates an instance of Debugger.
      * @param {boolean} debug run debugger in debug mode. Controlled via config.js
      * @param {Object} config sandbox configuration needed to attach a debugger
      * @memberof Debugger
@@ -152,7 +152,7 @@ class Debugger {
 
     /**
      * Returns all breakpoints currently set in the debugger.
-     *d
+     *
      * @returns
      * @memberof Debugger
      */
