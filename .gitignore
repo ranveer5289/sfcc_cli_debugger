@@ -8,3 +8,4 @@ linenumber.json
 dw.json
 config.js
 state.json
+coverage/**

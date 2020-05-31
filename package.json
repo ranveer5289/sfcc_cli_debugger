@@ -5,7 +5,7 @@
   "main": "debug.js",
   "scripts": {
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest --verbose"
   },
   "author": "ranveer raghuwanshi",
   "license": "ISC",
