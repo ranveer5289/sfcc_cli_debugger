@@ -94,7 +94,7 @@ async function setBreakPoint(data, client) {
     const dataParts = data.split(',');
     const lineNumber = dataParts[0];
     let scriptPath;
-    // if no script path specified, fallback to existing current script in scope
+    // if no script path specified, fallback to current script in scope
     if (dataParts.length === 1) {
         const currentScriptThread = await client.getCurrentThreadObject();
         scriptPath = currentScriptThread.scriptPath;
