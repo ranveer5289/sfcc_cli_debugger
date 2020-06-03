@@ -30,11 +30,11 @@ Download/clone the repository & run `npm install` to install the dependencies. N
 
 # Configuration
 
-Before starting to debug it is important to configure the debugger. The debugger configuration is part of `dw.json` and `config.js` file.
+Before starting to debug it is important to configure the debugger. The debugger configuration is part of `dw.json` and `config.js` file under `config` folder.
 
 `dw.json` is the standard file which is used by various other SFCC tools. Add your instance hostname & credentials in it.
 
-`config.js` is a custom configuration file. See `config.js.sample` for possible options.
+`config.js` is a custom configuration file. See `config/config.js.sample` for possible options.
 
 Out of the box debugger supports two kinds of workspace setups.
 
@@ -133,7 +133,7 @@ sfcc-cli-debug >
 Debugger also support multiple configurations i.e. you can maintain different configurations per project and supply it at runtime through cli parameters. If no parameters are specified debugger fallbacks to standard `dw.json` and `config.js` file names.
 
 ```js
-node debug.js --dwconfig ./dw.json --config ./config.js
+node debug.js --dwconfig ./config/dw.json --config ./config/config.js
 ```
 
 After running the above command you will enter into a custom repl prompt `sfcc-cli-debug`. The commands recognized by the debugger are listed in the help section (.help).

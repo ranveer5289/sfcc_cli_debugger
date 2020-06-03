@@ -1,8 +1,8 @@
 const glob = require('glob');
 const fs = require('fs');
 
-const util = require('../util');
-const DebuggerClass = require('../sfcc/debugger');
+const util = require('../../helpers/util');
+const DebuggerClass = require('../../sfcc/debugger');
 
 jest.mock('glob');
 jest.mock('fs');
