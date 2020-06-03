@@ -5,14 +5,14 @@ const path = require('path');
 const argv = require('yargs').argv;
 const fs = require('fs');
 
-const util = require(path.join(__dirname, 'util'));
+const util = require(path.join(__dirname, 'helpers', 'util'));
 
-const dwConfigPath = argv.dwconfig || 'dw.json';
-const configPath = argv.config || 'config.js';
+const dwConfigPath = argv.dwconfig || path.join('config', 'dw.json');
+const configPath = argv.config || path.join('config', 'config.js');
 
 const sfccOptions = require(path.join(__dirname, dwConfigPath));
 const config = require(path.join(__dirname, configPath));
-const debuggerStateFile = path.join(__dirname, 'state.json');
+const debuggerStateFile = path.join(__dirname, 'tmp', 'state.json');
 
 const debugMode = config.debug || false;
 const DebuggerApi = require(path.join(__dirname, 'sfcc', 'debugger'));

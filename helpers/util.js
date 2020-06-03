@@ -5,8 +5,8 @@ const glob = require('glob');
 const path = require('path');
 const os = require('os');
 
-const pathofFilePathJSON = path.join(process.cwd(), 'filepath.json');
-const pathofLineNumberJSON = path.join(process.cwd(), 'linenumber.json');
+const pathofFilePathJSON = path.join(process.cwd(), 'tmp', 'filepath.json');
+const pathofLineNumberJSON = path.join(process.cwd(), 'tmp', 'linenumber.json');
 
 /**
  * Return base64 encoded auth header
@@ -124,8 +124,8 @@ async function setBreakPointInteractive(client, config, configPath) {
      * If an an Inquirer prompt finishes, it closes the current REPL debugger instance as well.
      */
 
-    const findFilePath = path.join(__dirname, 'prompts', 'findfile.js');
-    const lineNumberPath = path.join(__dirname, 'prompts', 'linenumber.js');
+    const findFilePath = path.join(__dirname, '..', 'prompts', 'findfile.js');
+    const lineNumberPath = path.join(__dirname, '..', 'prompts', 'linenumber.js');
 
     childprocess.execSync(`node ${findFilePath} --config ${configPath}`, { stdio: 'inherit', shell: true });
     childprocess.execSync(`node ${lineNumberPath}`, { stdio: 'inherit', shell: true });

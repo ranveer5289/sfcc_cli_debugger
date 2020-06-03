@@ -1,11 +1,10 @@
 node_modules
-breakpoints.txt
 .history
 package-lock.json
 .vscode
-filepath.json
-linenumber.json
 dw.json
 config.js
-state.json
 coverage/**
+config/*.js
+config/*.json
+tmp/**

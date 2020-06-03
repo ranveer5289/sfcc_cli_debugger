@@ -5,11 +5,11 @@ const chalk = require('chalk');
 const path = require('path');
 const argv = require('yargs').argv;
 
-const util = require(path.join(__dirname, '..', 'util'));
+const util = require(path.join(__dirname, '..', 'helpers', 'util'));
 const config = require(path.join(__dirname, '..', argv.config));
 
 const foldersToExclude = config.foldersToExcludeFromSearch;
-const pathofFilePathJSON = path.join(process.cwd(), 'filepath.json');
+const pathofFilePathJSON = path.join(process.cwd(), 'tmp', 'filepath.json');
 
 inquirer.registerPrompt('fuzzypath', require('inquirer-fuzzy-path'));
 

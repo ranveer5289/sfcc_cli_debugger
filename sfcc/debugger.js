@@ -3,7 +3,7 @@ const axios = require('axios');
 const chalk = require('chalk');
 const path = require('path');
 
-const util = require(path.join(__dirname, '..', 'util'));
+const util = require(path.join(__dirname, '..', 'helpers', 'util'));
 
 const SFCC_DEBUGGER_CLIENT_ID = 'sfcc-cli-debugger';
 
