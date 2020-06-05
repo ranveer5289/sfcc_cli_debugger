@@ -136,8 +136,8 @@ async function setBreakPointInteractive(client, config, configPath) {
      * prompts/findfile.js
      * prompts/linenumber.js
     */
-    const fullFilePathData = getJSONFile(pathofFilePathJSON);
-    const lineNumberData = getJSONFile(pathofLineNumberJSON);
+    const fullFilePathData = this.getJSONFile(pathofFilePathJSON);
+    const lineNumberData = this.getJSONFile(pathofLineNumberJSON);
 
     if (fullFilePathData && lineNumberData) {
         const fullFilePath = fullFilePathData.path;
@@ -157,7 +157,7 @@ async function setBreakPointInteractive(client, config, configPath) {
             }
         }
         const brkPtData = [lineNumber, filePath].join(',');
-        await setBreakPoint(brkPtData, client);
+        await this.setBreakPoint(brkPtData, client);
     } else {
         console.log(chalk.red(`Unable to read linenumber & filepath from ${pathofLineNumberJSON} and ${pathofFilePathJSON}`));
     }

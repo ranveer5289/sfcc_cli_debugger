@@ -1,11 +1,14 @@
 const glob = require('glob');
 const fs = require('fs');
+const childprocess = require('child_process');
+const path = require('path');
 
 const util = require('../../helpers/util');
 const DebuggerClass = require('../../sfcc/debugger');
 
 jest.mock('glob');
 jest.mock('fs');
+jest.mock('child_process');
 
 describe('Utility script', function () {
     it('get authorization header', function () {
@@ -74,10 +77,11 @@ describe('Utility script', function () {
             firstname: 'John',
             lastname: 'Doe'
         };
-        fs.readFileSync.mockReturnValue(Buffer.from(JSON.stringify(mockResponse)));
+        const spy = jest.spyOn(fs, 'readFileSync').mockReturnValue(Buffer.from(JSON.stringify(mockResponse)));
 
         const output = util.getJSONFile('/some/path');
         expect(output).toMatchObject(mockResponse);
+        spy.mockRestore();
     });
 
     it('setBreakPoint', async function () {
@@ -90,5 +94,39 @@ describe('Utility script', function () {
         await util.setBreakPoint(mockData, debuggerClient);
         expect(spy).toHaveBeenCalledWith(expectedParams);
         spy.mockRestore();
+    });
+
+    it('setBreakPointInteractive', async function () {
+        jest.mock('path');
+        const debuggerClient = new DebuggerClass(false, {});
+        debuggerClient.connected = true;
+        const mockConfig = {
+            rootWorkSpacePath: '/Users/username/Downloads/plugin_wishlists'
+        };
+        const mockConfigPath = '/config/path';
+        const mockFindFilePath = '/path/to/findfile.js';
+        const mockLineNumberPath = '/path/to/linenumber.js';
+        const mockFilePathData = {
+            path: '/Users/username/Downloads/plugin_wishlists/cartridges/plugin_wishlists/cartridge/controllers/Wishlist.js'
+        };
+        const mockLineNumberPathData = { linenumber: '12' };
+        const mockBrkPtData = '12,/plugin_wishlists/cartridge/controllers/Wishlist.js';
+
+        const spy = jest.spyOn(childprocess, 'execSync').mockReturnValue({});
+        jest.spyOn(path, 'join').mockReturnValueOnce(mockFindFilePath);
+        jest.spyOn(path, 'join').mockReturnValueOnce(mockLineNumberPath);
+        jest.spyOn(util, 'getJSONFile').mockReturnValueOnce(mockFilePathData);
+        jest.spyOn(util, 'getJSONFile').mockReturnValueOnce(mockLineNumberPathData);
+        const setBreakPointSpy = jest.spyOn(util, 'setBreakPoint').mockReturnValueOnce({});
+
+        await util.setBreakPointInteractive(debuggerClient, mockConfig, mockConfigPath);
+
+        expect(spy).toHaveBeenCalledTimes(2);
+        expect(spy).toHaveBeenNthCalledWith(1, `node ${mockFindFilePath} --config ${mockConfigPath}`, { stdio: 'inherit', shell: true });
+        expect(spy).toHaveBeenNthCalledWith(2, `node ${mockLineNumberPath}`, { stdio: 'inherit', shell: true });
+
+        expect(setBreakPointSpy).toHaveBeenCalledWith(mockBrkPtData, debuggerClient);
+
+        jest.restoreAllMocks();
     });
 });
