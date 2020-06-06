@@ -321,7 +321,7 @@ describe('SFCC Debugger Class', function () {
         const debuggerClient = new DebuggerClass(false, {});
         debuggerClient.halted = true;
 
-        const getCurrentThreadObjectSpy = jest.spyOn(debuggerClient, 'getCurrentThreadObject').mockResolvedValue({
+        jest.spyOn(debuggerClient, 'getCurrentThreadObject').mockResolvedValue({
             id: threadId
         });
 
@@ -369,7 +369,7 @@ describe('SFCC Debugger Class', function () {
         const debuggerClient = new DebuggerClass(false, {});
         debuggerClient.halted = true;
 
-        const getCurrentThreadObjectSpy = jest.spyOn(debuggerClient, 'getCurrentThreadObject').mockResolvedValue({
+        jest.spyOn(debuggerClient, 'getCurrentThreadObject').mockResolvedValue({
             id: threadId
         });
 
@@ -410,7 +410,7 @@ describe('SFCC Debugger Class', function () {
 
         const debuggerClient = new DebuggerClass(false, {});
         debuggerClient.halted = true;
-        const getCurrentThreadObjectSpy = jest.spyOn(debuggerClient, 'getCurrentThreadObject').mockResolvedValue({
+        jest.spyOn(debuggerClient, 'getCurrentThreadObject').mockResolvedValue({
             id: threadId
         });
 
@@ -447,7 +447,7 @@ describe('SFCC Debugger Class', function () {
         const debuggerClient = new DebuggerClass(false, {});
         debuggerClient.halted = true;
 
-        const getCurrentThreadObjectSpy = jest.spyOn(debuggerClient, 'getCurrentThreadObject').mockResolvedValue({
+        jest.spyOn(debuggerClient, 'getCurrentThreadObject').mockResolvedValue({
             id: threadId
         });
 
