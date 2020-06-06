@@ -14,20 +14,23 @@ describe('SFCC Debugger Class', function () {
             'content-type': 'application/json'
         };
 
-        axios.create.mockReturnValue({
+        jest.spyOn(axios, 'create').mockReturnValue({
             baseURL: 'base_url',
             headers: headersMock
         });
+
         const debuggerClient = new DebuggerClass(false, {});
 
         expect(debuggerClient.instance.baseURL).toBe('base_url');
         expect(debuggerClient.instance.headers).toMatchObject(headersMock);
         expect(debuggerClient.connected).toBe(false);
         expect(debuggerClient.halted).toBe(false);
+
+        jest.resetAllMocks();
     });
 
     it('makeRequest Successful', async function () {
-        axios.create = jest.fn(() => axios);
+        jest.spyOn(axios, 'create').mockReturnValue(axios);
         const debuggerClient = new DebuggerClass(false, {});
         debuggerClient.connected = true;
 
@@ -35,41 +38,46 @@ describe('SFCC Debugger Class', function () {
             status: 200,
             data: 'mydata'
         };
-        axios.request.mockResolvedValue(expectedResponse);
+
+        jest.spyOn(axios, 'request').mockResolvedValue(expectedResponse);
 
         const output = await debuggerClient.makeRequest({ config: 'config' }, 'action');
         expect(output.success).toBe(true);
         expect(output.response).toMatchObject(expectedResponse);
+
+        jest.resetAllMocks();
     });
 
     it('makeRequest Not Successful', async function () {
-        axios.create = jest.fn(() => axios);
+        jest.spyOn(axios, 'create').mockReturnValue(axios);
         const debuggerClient = new DebuggerClass(false, {});
         debuggerClient.connected = true;
 
         const expectedResponse = {
             status: 400
         };
-        axios.request.mockResolvedValue(expectedResponse);
+        jest.spyOn(axios, 'request').mockResolvedValue(expectedResponse);
 
         const output = await debuggerClient.makeRequest({ config: 'config' }, 'action');
         expect(output.error).toBe('Something Happened....');
+        jest.resetAllMocks();
     });
 
     it('create debugger', async function () {
-        axios.create = jest.fn(function () { return axios; });
+        jest.spyOn(axios, 'create').mockReturnValue(axios);
         chalk.green = jest.fn(function (msg) { return msg; });
+
         const spy = jest.spyOn(console, 'log').mockImplementation();
 
         const expectedResponse = { status: 204 };
-        axios.post.mockResolvedValue(expectedResponse);
+        jest.spyOn(axios, 'post').mockResolvedValue(expectedResponse);
 
         const debuggerClient = new DebuggerClass(false, {});
         await debuggerClient.create();
 
         expect(debuggerClient.connected).toBe(true);
-        expect(console.log).toHaveBeenLastCalledWith('Debugger listening on server');
-        spy.mockRestore();
+        expect(spy).toHaveBeenLastCalledWith('Debugger listening on server');
+        jest.resetAllMocks();
     });
 
     it('delete debugger', async function () {
@@ -78,15 +86,14 @@ describe('SFCC Debugger Class', function () {
 
         const debuggerClient = new DebuggerClass(false, {});
 
-        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
+        jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
             response: { status: 204 }
         });
 
         await debuggerClient.delete();
         expect(debuggerClient.connected).toBe(false);
-        expect(console.log).toHaveBeenLastCalledWith('Debugger disconnected from server');
-        spy.mockRestore();
-        makeRequestSpy.mockRestore();
+        expect(spy).toHaveBeenLastCalledWith('Debugger disconnected from server');
+        jest.resetAllMocks();
     });
 
     it('delete debugger not successful', async function () {
@@ -94,14 +101,13 @@ describe('SFCC Debugger Class', function () {
 
         const debuggerClient = new DebuggerClass(false, {});
 
-        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
+        jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
             error: 'some error'
         });
 
         await debuggerClient.delete();
-        expect(console.log).toHaveBeenLastCalledWith('Error deleting debugger client some error');
-        spy.mockRestore();
-        makeRequestSpy.mockRestore();
+        expect(spy).toHaveBeenLastCalledWith('Error deleting debugger client some error');
+        jest.resetAllMocks();
     });
 
     it('setBreakpoint', async function () {
@@ -117,7 +123,7 @@ describe('SFCC Debugger Class', function () {
         };
 
         const debuggerClient = new DebuggerClass(false, {});
-        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
+        jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
             success: true,
             response: {
                 data: mockBreakpointResponse
@@ -126,11 +132,10 @@ describe('SFCC Debugger Class', function () {
 
         const output = await debuggerClient.setBreakpoint([]);
         expect(spy).toHaveBeenCalledTimes(1);
-        expect(console.log).toHaveBeenLastCalledWith('Breakpoint successfully set at location /some/path.js and line number 12');
+        expect(spy).toHaveBeenLastCalledWith('Breakpoint successfully set at location /some/path.js and line number 12');
         expect(output).toMatchObject(mockBreakpointResponse.breakpoints);
 
-        spy.mockRestore();
-        makeRequestSpy.mockRestore();
+        jest.resetAllMocks();
     });
 
     it('setBreakpoint not successful', async function () {
@@ -138,17 +143,15 @@ describe('SFCC Debugger Class', function () {
         const spy = jest.spyOn(console, 'log').mockImplementation();
 
         const debuggerClient = new DebuggerClass(false, {});
-        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
+        jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
             error: 'some error'
         });
 
         const output = await debuggerClient.setBreakpoint([]);
         expect(spy).toHaveBeenCalledTimes(1);
-        expect(console.log).toHaveBeenLastCalledWith('Error setting breakpoint some error');
+        expect(spy).toHaveBeenLastCalledWith('Error setting breakpoint some error');
         expect(output).toBe(null);
-
-        spy.mockRestore();
-        makeRequestSpy.mockRestore();
+        jest.resetAllMocks();
     });
 
     it('getBreakPoints', async function () {
@@ -174,7 +177,7 @@ describe('SFCC Debugger Class', function () {
         ];
 
         const debuggerClient = new DebuggerClass(false, {});
-        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
+        jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
             success: true,
             response: {
                 data: mockBreakpointResponse
@@ -183,11 +186,10 @@ describe('SFCC Debugger Class', function () {
 
         const output = await debuggerClient.getBreakpoints();
         expect(spy).toHaveBeenCalledTimes(1);
-        expect(console.table).toHaveBeenLastCalledWith(expectedResponse);
+        expect(spy).toHaveBeenLastCalledWith(expectedResponse);
         expect(output).toMatchObject(expectedResponse);
 
-        spy.mockRestore();
-        makeRequestSpy.mockRestore();
+        jest.resetAllMocks();
     });
 
     it('getBreakPoints not successful', async function () {
@@ -195,17 +197,16 @@ describe('SFCC Debugger Class', function () {
         const spy = jest.spyOn(console, 'log').mockImplementation();
 
         const debuggerClient = new DebuggerClass(false, {});
-        const makeRequestSpy = jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
+        jest.spyOn(debuggerClient, 'makeRequest').mockResolvedValue({
             error: 'some error'
         });
 
         const output = await debuggerClient.getBreakpoints();
         expect(spy).toHaveBeenCalledTimes(1);
-        expect(console.log).toHaveBeenLastCalledWith('Error setting breakpoint some error');
+        expect(spy).toHaveBeenLastCalledWith('Error setting breakpoint some error');
         expect(output).toMatchObject([]);
 
-        spy.mockRestore();
-        makeRequestSpy.mockRestore();
+        jest.resetAllMocks();
     });
 
     it('delete all breakpoints', async function () {
@@ -228,10 +229,9 @@ describe('SFCC Debugger Class', function () {
 
         expect(spy).toHaveBeenCalledTimes(1);
         expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, 'delete_breakpoint');
-        expect(console.log).toHaveBeenLastCalledWith('All breakpoints removed');
+        expect(spy).toHaveBeenLastCalledWith('All breakpoints removed');
 
-        spy.mockRestore();
-        makeRequestSpy.mockRestore();
+        jest.resetAllMocks();
     });
 
     it('delete single breakpoints', async function () {
@@ -254,10 +254,8 @@ describe('SFCC Debugger Class', function () {
 
         expect(spy).toHaveBeenCalledTimes(1);
         expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, 'delete_breakpoint');
-        expect(console.log).toHaveBeenLastCalledWith('breakpoint removed');
-
-        spy.mockRestore();
-        makeRequestSpy.mockRestore();
+        expect(spy).toHaveBeenLastCalledWith('breakpoint removed');
+        jest.resetAllMocks();
     });
 
     it('get current thread', async function () {
@@ -304,7 +302,7 @@ describe('SFCC Debugger Class', function () {
         expect(output).toMatchObject(mockOutput);
         expect(debuggerClient.halted).toBe(true);
 
-        makeRequestSpy.mockRestore();
+        jest.resetAllMocks();
     });
 
     it('get variables', async function () {
@@ -351,8 +349,7 @@ describe('SFCC Debugger Class', function () {
         expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, 'get_variables');
         expect(output).toMatchObject(mockOutput);
 
-        getCurrentThreadObjectSpy.mockRestore();
-        makeRequestSpy.mockRestore();
+        jest.resetAllMocks();
     });
 
     it('get members of variables', async function () {
@@ -400,8 +397,7 @@ describe('SFCC Debugger Class', function () {
         expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, 'get_members');
         expect(output).toMatchObject(mockOutput);
 
-        getCurrentThreadObjectSpy.mockRestore();
-        makeRequestSpy.mockRestore();
+        jest.resetAllMocks();
     });
 
     it('eval on server', async function () {
@@ -432,8 +428,7 @@ describe('SFCC Debugger Class', function () {
         expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, 'get_value_eval');
         expect(output).toBe('some value');
 
-        getCurrentThreadObjectSpy.mockRestore();
-        makeRequestSpy.mockRestore();
+        jest.resetAllMocks();
     });
 
     it('handle step operations', async function () {
@@ -480,7 +475,6 @@ describe('SFCC Debugger Class', function () {
         expect(makeRequestSpy).toHaveBeenCalledWith(mockOptions, `step_${operation}`);
         expect(output).toMatchObject(mockOutput);
 
-        getCurrentThreadObjectSpy.mockRestore();
-        makeRequestSpy.mockRestore();
+        jest.resetAllMocks();
     });
 });

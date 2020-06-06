@@ -26,7 +26,7 @@ describe('Utility script', function () {
             childWorkSpaces: [],
             rootWorkSpacePath: '/dummy/folder/sitegenesis-master'
         };
-        glob.sync.mockReturnValue([
+        jest.spyOn(glob, 'sync').mockReturnValue([
             '/app_storefront_controllers/cartridge/controllers/Home.js',
             '/app_storefront_controllers/cartridge/controllers/Product.js',
             '/node_modules/module/index.js'
@@ -39,6 +39,7 @@ describe('Utility script', function () {
 
         const output = util.getAllFilesFromWorkspaces(config);
         expect(output).toMatchObject(expectedOutput);
+        jest.resetAllMocks();
     });
 
     it('get all files from workspace with child workspace', function () {
@@ -47,7 +48,7 @@ describe('Utility script', function () {
             childWorkSpaces: ['/dummy/folder/sitegenesis-master', '/dummy/folder/integrations', '/dummy/folder/plugins'],
             rootWorkSpacePath: '/dummy/folder'
         };
-        glob.sync.mockReturnValue([
+        jest.spyOn(glob, 'sync').mockReturnValue([
             '/app_storefront_controllers/cartridge/controllers/Home.js',
             '/int_integrations/cartridge/controllers/Integration.js',
             '/plugin_wishlist/cartridge/controllers/Wishlist.js',
@@ -70,6 +71,7 @@ describe('Utility script', function () {
 
         const output = util.getAllFilesFromWorkspaces(config);
         expect(output).toMatchObject(expectedOutput);
+        jest.resetAllMocks();
     });
 
     it('get json file', function () {
