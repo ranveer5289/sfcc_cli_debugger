@@ -1,6 +1,6 @@
 {
   "name": "sfcc-cli-debugger",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "SFCC Command line debugger",
   "main": "debug.js",
   "scripts": {
