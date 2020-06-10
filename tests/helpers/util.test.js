@@ -55,17 +55,14 @@ describe('Utility script', function () {
             '/node_modules/module/index.js'
         ]);
 
+        jest.spyOn(glob, 'sync').mockReturnValueOnce(['/app_storefront_controllers/cartridge/controllers/Home.js']);
+        jest.spyOn(glob, 'sync').mockReturnValueOnce(['/int_integrations/cartridge/controllers/Integration.js']);
+        jest.spyOn(glob, 'sync').mockReturnValueOnce(['/plugin_wishlist/cartridge/controllers/Wishlist.js']);
+        jest.spyOn(glob, 'sync').mockReturnValueOnce(['/node_modules/module/index.js']);
+
         const expectedOutput = [
             '/dummy/folder/sitegenesis-master/app_storefront_controllers/cartridge/controllers/Home.js',
-            '/dummy/folder/sitegenesis-master/int_integrations/cartridge/controllers/Integration.js',
-            '/dummy/folder/sitegenesis-master/plugin_wishlist/cartridge/controllers/Wishlist.js',
-
-            '/dummy/folder/integrations/app_storefront_controllers/cartridge/controllers/Home.js',
             '/dummy/folder/integrations/int_integrations/cartridge/controllers/Integration.js',
-            '/dummy/folder/integrations/plugin_wishlist/cartridge/controllers/Wishlist.js',
-
-            '/dummy/folder/plugins/app_storefront_controllers/cartridge/controllers/Home.js',
-            '/dummy/folder/plugins/int_integrations/cartridge/controllers/Integration.js',
             '/dummy/folder/plugins/plugin_wishlist/cartridge/controllers/Wishlist.js'
         ];
 
@@ -83,7 +80,7 @@ describe('Utility script', function () {
 
         const output = util.getJSONFile('/some/path');
         expect(output).toMatchObject(mockResponse);
-        spy.mockRestore();
+        jest.resetAllMocks();
     });
 
     it('setBreakPoint', async function () {
@@ -95,7 +92,7 @@ describe('Utility script', function () {
 
         await util.setBreakPoint(mockData, debuggerClient);
         expect(spy).toHaveBeenCalledWith(expectedParams);
-        spy.mockRestore();
+        jest.resetAllMocks();
     });
 
     it('setBreakPointInteractive', async function () {
