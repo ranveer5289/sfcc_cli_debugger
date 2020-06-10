@@ -26,8 +26,8 @@ async function evalOnSFCCServer(cmd, context, filename, callback) {
     const commandWithoutLineBreaks = cmd.replace(/(\r\n|\n|\r)/gm, '');
     if (commandWithoutLineBreaks.length > 0) {
         const expressionValue = await debuggerClient.getValueByEval(cmd);
-        if (expressionValue && expressionValue.result) {
-            callback(null, expressionValue.result);
+        if (expressionValue) {
+            callback(null, expressionValue);
         } else {
             callback('Unable to evaluate expression', null);
         }

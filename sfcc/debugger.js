@@ -360,7 +360,7 @@ class Debugger {
         };
         const output = await this.makeRequest(options, 'get_value_eval');
         if (output && output.response && output.response.data) {
-            value = output.response.data.value;
+            value = output.response.data.result;
         } else {
             console.error(`Error evaluating value from server ${output.error}`);
         }

@@ -418,7 +418,7 @@ describe('SFCC Debugger Class', function () {
             success: true,
             response: {
                 data: {
-                    value: 'some value'
+                    result: 'some value'
                 }
             }
         });
