@@ -76,7 +76,7 @@ describe('Utility script', function () {
             firstname: 'John',
             lastname: 'Doe'
         };
-        const spy = jest.spyOn(fs, 'readFileSync').mockReturnValue(Buffer.from(JSON.stringify(mockResponse)));
+        jest.spyOn(fs, 'readFileSync').mockReturnValue(Buffer.from(JSON.stringify(mockResponse)));
 
         const output = util.getJSONFile('/some/path');
         expect(output).toMatchObject(mockResponse);
