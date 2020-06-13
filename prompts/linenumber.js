@@ -3,7 +3,6 @@ const fs = require('fs');
 const chalk = require('chalk');
 const path = require('path');
 
-
 const pathofLineNumberJSON = path.join(process.cwd(), 'tmp', 'linenumber.json');
 inquirer
     .prompt([
