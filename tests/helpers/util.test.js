@@ -48,12 +48,6 @@ describe('Utility script', function () {
             childWorkSpaces: ['/dummy/folder/sitegenesis-master', '/dummy/folder/integrations', '/dummy/folder/plugins'],
             rootWorkSpacePath: '/dummy/folder'
         };
-        jest.spyOn(glob, 'sync').mockReturnValue([
-            '/app_storefront_controllers/cartridge/controllers/Home.js',
-            '/int_integrations/cartridge/controllers/Integration.js',
-            '/plugin_wishlist/cartridge/controllers/Wishlist.js',
-            '/node_modules/module/index.js'
-        ]);
 
         jest.spyOn(glob, 'sync').mockReturnValueOnce(['/app_storefront_controllers/cartridge/controllers/Home.js']);
         jest.spyOn(glob, 'sync').mockReturnValueOnce(['/int_integrations/cartridge/controllers/Integration.js']);
